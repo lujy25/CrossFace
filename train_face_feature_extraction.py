@@ -112,9 +112,9 @@ def valid_model(epoch, faceExtraction, valid_dataset, valid_dataloader):
     triplet_losses.reset()
     distances, labels = [], []
     for batch_idx, batch_sample in tqdm(enumerate(valid_dataloader)):
-        anc_img = batch_sample['anc_img']
-        pos_img = batch_sample['pos_img']
-        neg_img = batch_sample['neg_img']
+        anc_img = batch_sample['anc_img'].to(device)
+        pos_img = batch_sample['pos_img'].to(device)
+        neg_img = batch_sample['neg_img'].to(device)
         anc_embed = l2_norm(faceExtraction(anc_img))
         pos_embed = l2_norm(faceExtraction(pos_img))
         neg_embed = l2_norm(faceExtraction(neg_img))
