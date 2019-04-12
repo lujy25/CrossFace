@@ -34,7 +34,7 @@ class SampleDataset(Dataset):
         self._sample_weights = []
         self._sample_faces = []
         self._classes = []
-        for id, single_df in self._df.groupby(by=['subject_id']):
+        for id, single_df in self._df.groupby(by=['class']):
             sample_weight = len(self._df) / len(single_df)
             sample_weights = [sample_weight] * len(single_df)
             self._sample_weights.extend(sample_weights)

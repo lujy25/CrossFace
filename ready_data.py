@@ -180,7 +180,7 @@ def ready_exist_df():
     save_df.to_csv("exist_IJB_metadata.csv", index=False)
 
 def adjust_class():
-    df = pd.read_csv('xls_csv/IJB_metadata.csv')
+    df = pd.read_csv('xls_csv/test_IJB.csv')
     new_id = 0
     files = []
     yaws = []
@@ -199,7 +199,7 @@ def adjust_class():
     save_df['file'] = files
     save_df['yaw'] = yaws
     save_df['class'] = new_subject_ids
-    save_df.to_csv("new_IJB_metadata.csv", index=False)
+    save_df.to_csv("xls_csv/test_IJB.csv", index=False)
 
 
 def split_train_test():
@@ -212,4 +212,4 @@ def split_train_test():
     train_df.to_csv('xls_csv/train_IJB.csv')
     test_df.to_csv(("xls_csv/test_IJB.csv"))
 if __name__ == "__main__":
-    analyze_ijbc_pose()
+    adjust_class()
