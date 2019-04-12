@@ -23,6 +23,8 @@ parser.add_argument('--valid-num-triplets', default=10000,
                     help='number of triplets for valid (default: 10000)')
 parser.add_argument('--train-batch-size', default=110, type=int, metavar='BS',
                     help='batch size (default: 128)')
+parser.add_argument('--margin', default=0.5, type=float, metavar='MG',
+                    help='margin (default: 0.5)')
 parser.add_argument('--valid-batch-size', default=16, type=int, metavar='BS',
                     help='batch size (default: 128)')
 parser.add_argument('--num-workers', default=4, type=int, metavar='NW',
@@ -101,7 +103,7 @@ def main():
             schedule_lr(optimizer)
         print(80 * '=')
         print('Epoch [{}/{}]'.format(epoch, args.end_epoch))
-        train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arcOutput, train_dataloader, optimizer)
+        #train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arcOutput, train_dataloader, optimizer)
         valid_model(epoch, faceExtraction, valid_dataset, valid_dataloader)
     print(80 * '=')
 
