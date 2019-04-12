@@ -1,0 +1,143 @@
+import argparse
+import torch
+from util.models import *
+import numpy as np
+from util.data_loader import get_train_face_extraction_dataloader
+from util.evaluate import *
+import os
+from util.models import *
+from tqdm import tqdm
+
+parser = argparse.ArgumentParser(
+    description='Face Recognition using Arc Face')
+parser.add_argument('--start-epoch', default=0, type=int, metavar='SE',
+                    help='start epoch (default: 0)')
+parser.add_argument('--end-epoch', default=125, type=int, metavar='NE',
+                    help='number of epochs to train (default: 200)')
+parser.add_argument('--embedding-size', default=512, type=int, metavar='ES',
+                    help='embedding size (default: 128)')
+parser.add_argument('--valid-num-triplets', default=10000,
+                    type=int, metavar='NTT',
+                    help='number of triplets for valid (default: 10000)')
+parser.add_argument('--train-batch-size', default=16, type=int, metavar='BS',
+                    help='batch size (default: 128)')
+parser.add_argument('--valid-batch-size', default=16, type=int, metavar='BS',
+                    help='batch size (default: 128)')
+parser.add_argument('--num-workers', default=2, type=int, metavar='NW',
+                    help='number of workers (default: 8)')
+parser.add_argument('--train-root-dir', default='./datasets', type=str,
+                    help='path to train root dir')
+parser.add_argument('--valid-root-dir', default='./datasets', type=str,
+                    help='path to valid root dir')
+parser.add_argument('--train-csv-name', default='./xls_csv/IJB_metadata.csv', type=str,
+                    help='list of training images')
+parser.add_argument('--valid-csv-name', default='./xls_csv/IJB_metadata.csv', type=str,
+                    help='list of validtion images')
+
+args = parser.parse_args()
+LOSS = FocalLoss()
+losses = AverageMeter()
+top1 = AverageMeter()
+top5 = AverageMeter()
+l2_dist = PairwiseDistance(2)
+
+device_id = 0
+device = torch.device('cuda:%d' % device_id if torch.cuda.is_available() else 'cpu')
+
+
+def separate_irse_bn_paras(modules):
+    if not isinstance(modules, list):
+        modules = [*modules.modules()]
+    paras_only_bn = []
+    paras_wo_bn = []
+    for layer in modules:
+        if 'Backbone' in str(layer.__class__):
+            continue
+        if 'container' in str(layer.__class__):
+            continue
+        else:
+            if 'batchnorm' in str(layer.__class__):
+                paras_only_bn.extend([*layer.parameters()])
+            else:
+                paras_wo_bn.extend([*layer.parameters()])
+
+    return paras_only_bn, paras_wo_bn
+
+def schedule_lr(optimizer):
+    for params in optimizer.param_groups:
+        params['lr'] /= 10.
+
+def warm_up_lr(batch, num_batch_warm_up, init_lr, optimizer):
+    print(batch)
+    for params in optimizer.param_groups:
+        params['lr'] = batch * init_lr / num_batch_warm_up
+
+batch = 0
+save_fold = 'Origin'
+if not os.path.exists(os.path.join('log', save_fold)):
+    os.makedirs(os.path.join('log', save_fold))
+
+def main():
+    dataset, train_dataloader = get_train_face_extraction_dataloader(root_dir=args.train_root_dir,
+                                                            csv_name=args.train_csv_name,
+                                                            batch_size=args.train_batch_size,
+                                                            num_workers=args.num_workers)
+    faceExtraction = Backbone().to(device)
+    ArcOutput = ArcFace(in_features=args.embedding_size, out_features=dataset.get_class_num(), device_id=[device_id]).to(device)
+    backbone_paras_only_bn, backbone_paras_wo_bn = separate_irse_bn_paras(faceExtraction)
+    _, head_paras_wo_bn = separate_irse_bn_paras(ArcOutput)
+    optimizer = torch.optim.SGD([{'params': backbone_paras_wo_bn + head_paras_wo_bn, 'weight_decay': 5e-4}], lr=0.1, momentum=0.9)
+
+    NUM_EPOCH_WARM_UP = args.end_epoch // 25
+    NUM_BATCH_WARM_UP = len(train_dataloader) * NUM_EPOCH_WARM_UP
+    for epoch in range(args.start_epoch, args.end_epoch):
+        if epoch in [35, 65, 95]:
+            schedule_lr(optimizer)
+        print(80 * '=')
+        print('Epoch [{}/{}]'.format(epoch, args.end_epoch))
+        train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, ArcOutput, train_dataloader, optimizer)
+
+    print(80 * '=')
+
+
+def train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, ArcOutput, train_dataloader, optimizer):
+    for batch_idx, batch_sample in tqdm(enumerate(train_dataloader)):
+        global batch
+        if (epoch + 1 <= NUM_EPOCH_WARM_UP) and (
+                batch + 1 <= NUM_BATCH_WARM_UP):  # adjust LR for each training batch during warm up
+            warm_up_lr(batch + 1, NUM_BATCH_WARM_UP, 0.1, optimizer)
+        face_img = batch_sample['face_img'].to(device)
+        face_class = batch_sample['face_class'].to(device).long()
+        features = faceExtraction(face_img)
+        outputs = ArcOutput(features, face_class)
+        loss = LOSS(outputs, face_class)
+        # measure accuracy and record loss
+        prec1, prec5 = cal_topk_accuracy(outputs.data, face_class, topk=(1, 5))
+        losses.update(loss.data.item(), face_img.size(0))
+        top1.update(prec1.data.item(), face_img.size(0))
+        top5.update(prec5.data.item(), face_img.size(0))
+        # compute gradient and do SGD step
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        batch += 1
+    print('Training Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+          'Training Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'
+          'Training Prec@5 {top5.val:.3f} ({top5.avg:.3f})'.format(loss=losses, top1=top1, top5=top5))
+    with open('./log/{}/{}_log.txt'.format(save_fold, str(save_fold)), 'a') as f:
+        f.write('Training Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+                'Training Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'
+                'Training Prec@5 {top5.val:.3f} ({top5.avg:.3f})\n'.format(loss=losses, top1=top1, top5=top5))
+        f.close()
+    if epoch % 20 == 0:
+        torch.save({'epoch': epoch,
+                    'state_dict': faceExtraction.state_dict()},
+                   './log/{}/{}_BACKBONE_checkpoint_epoch{}.pth'.format(str(save_fold), str(save_fold),
+                                                                                        epoch))
+        torch.save({'epoch': epoch,
+                    'state_dict': ArcOutput.state_dict()},
+                   './log/{}/{}_HEAD_checkpoint_epoch{}.pth'.format(str(save_fold), str(save_fold),
+                                                                                    epoch))
+
+if __name__ == "__main__":
+    main()
