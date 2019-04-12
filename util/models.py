@@ -3,6 +3,7 @@ import torch.nn as nn
 from torchvision.models import resnet34
 import torch.nn.functional as F
 from torch.nn import Parameter
+from torch.autograd import Function
 import math
 from torch.nn import *
 from collections import namedtuple
