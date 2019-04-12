@@ -135,9 +135,9 @@ def valid_model(epoch, faceExtraction, valid_dataset, valid_dataloader):
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
     accuracy, best_threshold = cal_10kfold_accuracy(distances, labels)
-    print('Valid Loss         = {loss.val:.4f} ({loss.avg:.4f}\tAccuracy         = {accuracy:.4f}'.format(loss=triplet_losses, accuracy=np.mean(accuracy)))
+    print('Valid Loss         = {loss.val:.4f} {loss.avg:.4f}\tAccuracy         = {accuracy:.4f}'.format(loss=triplet_losses, accuracy=np.mean(accuracy)))
     with open('./log/{}/{}_log.txt'.format(save_fold, str(save_fold)), 'a') as f:
-        f.write('Valid Loss         = {loss.val:.4f} ({loss.avg:.4f}\tAccuracy         = {accuracy:.4\n'.format(loss=triplet_losses, accuracy=np.mean(accuracy)))
+        f.write('Valid Loss         = {loss.val:.4f} {loss.avg:.4f}\tAccuracy         = {accuracy:.4}\n'.format(loss=triplet_losses, accuracy=np.mean(accuracy)))
         f.close()
 
 
