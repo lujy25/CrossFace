@@ -25,7 +25,7 @@ parser.add_argument('--train-batch-size', default=110, type=int, metavar='BS',
                     help='batch size (default: 128)')
 parser.add_argument('--valid-batch-size', default=16, type=int, metavar='BS',
                     help='batch size (default: 128)')
-parser.add_argument('--num-workers', default=8, type=int, metavar='NW',
+parser.add_argument('--num-workers', default=4, type=int, metavar='NW',
                     help='number of workers (default: 8)')
 parser.add_argument('--train-root-dir', default='./datasets', type=str,
                     help='path to train root dir')
