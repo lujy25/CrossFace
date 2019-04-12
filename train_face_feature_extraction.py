@@ -46,7 +46,7 @@ top1 = AverageMeter()
 top5 = AverageMeter()
 l2_dist = PairwiseDistance(2)
 
-device_id = 0
+device_id = 1
 device = torch.device('cuda:%d' % device_id if torch.cuda.is_available() else 'cpu')
 
 
@@ -91,6 +91,7 @@ def main():
                                                                            batch_size=args.valid_batch_size,
                                                                            num_workers=args.num_workers)
     faceExtraction = Backbone().to(device)
+    faceExtraction.load_state_dict(torch.load('./model/arcface_weight/backbone_ir50_ms1m_epoch120.pth'))
     arcOutput = ArcFace(in_features=args.embedding_size, out_features=train_dataset.get_class_num(), device_id=[device_id]).to(device)
     backbone_paras_only_bn, backbone_paras_wo_bn = separate_irse_bn_paras(faceExtraction)
     _, head_paras_wo_bn = separate_irse_bn_paras(arcOutput)
@@ -135,9 +136,9 @@ def valid_model(epoch, faceExtraction, valid_dataset, valid_dataloader):
     labels = np.array([sublabel for label in labels for sublabel in label])
     distances = np.array([subdist for dist in distances for subdist in dist])
     accuracy, best_threshold = cal_10kfold_accuracy(distances, labels)
-    print('Valid Loss         = {loss.val:.4f} {loss.avg:.4f}\tAccuracy         = {accuracy:.4f}'.format(loss=triplet_losses, accuracy=np.mean(accuracy)))
+    print('Valid Loss         = {loss.val:.4f} ({loss.avg:.4f})\tAccuracy         = {accuracy:.4f}'.format(loss=triplet_losses, accuracy=np.mean(accuracy)))
     with open('./log/{}/{}_log.txt'.format(save_fold, str(save_fold)), 'a') as f:
-        f.write('Valid Loss         = {loss.val:.4f} {loss.avg:.4f}\tAccuracy         = {accuracy:.4}\n'.format(loss=triplet_losses, accuracy=np.mean(accuracy)))
+        f.write('Valid Loss         = {loss.val:.4f} ({loss.avg:.4f})\tAccuracy         = {accuracy:.4}\n'.format(loss=triplet_losses, accuracy=np.mean(accuracy)))
         f.close()
 
 
