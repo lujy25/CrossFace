@@ -6,7 +6,7 @@ from skimage import io
 file_root_fold = 'xls_csv'
 
 def analyze_ijbc_pose():
-    df = pd.read_csv(os.path.join(file_root_fold, "IJB_metadata.csv"))
+    df = pd.read_csv(os.path.join(file_root_fold, "test_IJB.csv"))
     pose_count_dict = {}
     for i in range(-90, 90):
         pose_count_dict[int(i)] = 0
@@ -16,7 +16,7 @@ def analyze_ijbc_pose():
     analyze_df = pd.DataFrame()
     for i in range(-90, 90):
         analyze_df.loc[i, 'num'] = pose_count_dict[int(i)]
-    analyze_df.to_excel(os.path.join(file_root_fold, "analyze_ijbc_pose.xls"))
+    analyze_df.to_excel(os.path.join(file_root_fold, "analyze_test_pose.xls"))
 
 def remove_no_id_image():
     df = pd.read_csv(os.path.join(file_root_fold, "ijbc_face_metadata.csv"))
@@ -179,5 +179,37 @@ def ready_exist_df():
     save_df['yaw'] = yaws
     save_df.to_csv("exist_IJB_metadata.csv", index=False)
 
+def adjust_class():
+    df = pd.read_csv('xls_csv/IJB_metadata.csv')
+    new_id = 0
+    files = []
+    yaws = []
+    subject_ids = []
+    new_subject_ids = []
+    for id, single_df in df.groupby(by=['subject_id']):
+        for index in single_df.index:
+            file, yaw = single_df.ix[index, ['file', 'yaw']]
+            files.append(file)
+            yaws.append(yaw)
+            subject_ids.append(id)
+            new_subject_ids.append(new_id)
+        new_id += 1
+    save_df = pd.DataFrame()
+    save_df['subject_id'] = subject_ids
+    save_df['file'] = files
+    save_df['yaw'] = yaws
+    save_df['class'] = new_subject_ids
+    save_df.to_csv("new_IJB_metadata.csv", index=False)
+
+
+def split_train_test():
+    df = pd.read_csv('xls_csv/IJB_metadata.csv')
+    classes = list(np.unique(df['class'].tolist()))
+    np.random.shuffle(classes)
+    train_classes = classes[:int(len(classes) * 0.8)]
+    train_df = df[df['class'].isin(train_classes)]
+    test_df = df[~df['class'].isin(train_classes)]
+    train_df.to_csv('xls_csv/train_IJB.csv')
+    test_df.to_csv(("xls_csv/test_IJB.csv"))
 if __name__ == "__main__":
     analyze_ijbc_pose()

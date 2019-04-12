@@ -29,9 +29,9 @@ parser.add_argument('--train-root-dir', default='./datasets', type=str,
                     help='path to train root dir')
 parser.add_argument('--valid-root-dir', default='./datasets', type=str,
                     help='path to valid root dir')
-parser.add_argument('--train-csv-name', default='./xls_csv/IJB_metadata.csv', type=str,
+parser.add_argument('--train-csv-name', default='./xls_csv/train_IJB.csv', type=str,
                     help='list of training images')
-parser.add_argument('--valid-csv-name', default='./xls_csv/IJB_metadata.csv', type=str,
+parser.add_argument('--valid-csv-name', default='./xls_csv/test_IJB.csv', type=str,
                     help='list of validtion images')
 
 args = parser.parse_args()
