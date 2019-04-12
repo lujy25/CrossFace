@@ -21,11 +21,11 @@ parser.add_argument('--embedding-size', default=512, type=int, metavar='ES',
 parser.add_argument('--valid-num-triplets', default=10000,
                     type=int, metavar='NTT',
                     help='number of triplets for valid (default: 10000)')
-parser.add_argument('--train-batch-size', default=100, type=int, metavar='BS',
+parser.add_argument('--train-batch-size', default=110, type=int, metavar='BS',
                     help='batch size (default: 128)')
 parser.add_argument('--valid-batch-size', default=16, type=int, metavar='BS',
                     help='batch size (default: 128)')
-parser.add_argument('--num-workers', default=4, type=int, metavar='NW',
+parser.add_argument('--num-workers', default=8, type=int, metavar='NW',
                     help='number of workers (default: 8)')
 parser.add_argument('--train-root-dir', default='./datasets', type=str,
                     help='path to train root dir')
