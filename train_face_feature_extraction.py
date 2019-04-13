@@ -168,10 +168,12 @@ def train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arc
         loss.backward()
         optimizer.step()
         batch += 1
+    print("Epoch %d / %s\n" % epoch)
     print('Training Loss {loss.val:.4f} ({loss.avg:.4f})\t'
           'Training Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'
           'Training Prec@5 {top5.val:.3f} ({top5.avg:.3f})'.format(loss=arc_losses, top1=top1, top5=top5))
     with open('./log/{}/{}_log.txt'.format(save_fold, str(save_fold)), 'a') as f:
+        f.write("Epoch %d / %s\n" % epoch)
         f.write('Training Loss {loss.val:.4f} ({loss.avg:.4f})\t'
                 'Training Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'
                 'Training Prec@5 {top5.val:.3f} ({top5.avg:.3f})\n'.format(loss=arc_losses, top1=top1, top5=top5))
