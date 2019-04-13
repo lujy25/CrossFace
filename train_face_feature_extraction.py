@@ -95,7 +95,8 @@ def main():
     arcOutput = ArcFace(in_features=args.embedding_size, out_features=train_dataset.get_class_num(), device_id=[device_id]).to(device)
     backbone_paras_only_bn, backbone_paras_wo_bn = separate_irse_bn_paras(faceExtraction)
     _, head_paras_wo_bn = separate_irse_bn_paras(arcOutput)
-    optimizer = torch.optim.SGD([{'params': backbone_paras_wo_bn + head_paras_wo_bn, 'weight_decay': 5e-4}], lr=0.002, momentum=0.9)
+    optimizer = torch.optim.SGD([{'params': backbone_paras_wo_bn + head_paras_wo_bn, 'weight_decay': 5e-4},
+                                 {'params': backbone_paras_only_bn}], lr=0.1, momentum=0.9)
 
     NUM_EPOCH_WARM_UP = args.end_epoch // 25
     NUM_BATCH_WARM_UP = len(train_dataloader) * NUM_EPOCH_WARM_UP
@@ -150,9 +151,9 @@ def train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arc
     top5.reset()
     for batch_idx, batch_sample in tqdm(enumerate(train_dataloader)):
         global batch
-        # if (epoch + 1 <= NUM_EPOCH_WARM_UP) and (
-        #         batch + 1 <= NUM_BATCH_WARM_UP):  # adjust LR for each training batch during warm up
-        #     warm_up_lr(batch + 1, NUM_BATCH_WARM_UP, 0.1, optimizer)
+        if (epoch + 1 <= NUM_EPOCH_WARM_UP) and (
+                batch + 1 <= NUM_BATCH_WARM_UP):  # adjust LR for each training batch during warm up
+            warm_up_lr(batch + 1, NUM_BATCH_WARM_UP, 0.1, optimizer)
         face_img = batch_sample['face_img'].to(device)
         face_class = batch_sample['face_class'].to(device).long()
         features = faceExtraction(face_img)
