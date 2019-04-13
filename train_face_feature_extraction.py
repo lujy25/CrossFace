@@ -21,7 +21,7 @@ parser.add_argument('--embedding-size', default=512, type=int, metavar='ES',
 parser.add_argument('--valid-num-triplets', default=10000,
                     type=int, metavar='NTT',
                     help='number of triplets for valid (default: 10000)')
-parser.add_argument('--train-batch-size', default=110, type=int, metavar='BS',
+parser.add_argument('--train-batch-size', default=100, type=int, metavar='BS',
                     help='batch size (default: 128)')
 parser.add_argument('--margin', default=0.5, type=float, metavar='MG',
                     help='margin (default: 0.5)')
