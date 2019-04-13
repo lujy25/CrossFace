@@ -77,7 +77,7 @@ def warm_up_lr(batch, num_batch_warm_up, init_lr, optimizer):
         params['lr'] = batch * init_lr / num_batch_warm_up
 
 batch = 0
-save_fold = 'Origin'
+save_fold = 'finturning-Origin'
 if not os.path.exists(os.path.join('log', save_fold)):
     os.makedirs(os.path.join('log', save_fold))
 
