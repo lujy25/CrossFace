@@ -104,7 +104,7 @@ def main():
             schedule_lr(optimizer)
         print(80 * '=')
         print('Epoch [{}/{}]'.format(epoch, args.end_epoch))
-        #train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arcOutput, train_dataloader, optimizer)
+        train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arcOutput, train_dataloader, optimizer)
         valid_model(epoch, faceExtraction, valid_dataset, valid_dataloader)
     print(80 * '=')
 
@@ -150,9 +150,9 @@ def train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arc
     top5.reset()
     for batch_idx, batch_sample in tqdm(enumerate(train_dataloader)):
         global batch
-        if (epoch + 1 <= NUM_EPOCH_WARM_UP) and (
-                batch + 1 <= NUM_BATCH_WARM_UP):  # adjust LR for each training batch during warm up
-            warm_up_lr(batch + 1, NUM_BATCH_WARM_UP, 0.1, optimizer)
+        # if (epoch + 1 <= NUM_EPOCH_WARM_UP) and (
+        #         batch + 1 <= NUM_BATCH_WARM_UP):  # adjust LR for each training batch during warm up
+        #     warm_up_lr(batch + 1, NUM_BATCH_WARM_UP, 0.1, optimizer)
         face_img = batch_sample['face_img'].to(device)
         face_class = batch_sample['face_class'].to(device).long()
         features = faceExtraction(face_img)
