@@ -104,7 +104,7 @@ def main():
             schedule_lr(optimizer)
         print(80 * '=')
         print('Epoch [{}/{}]'.format(epoch, args.end_epoch))
-        train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arcOutput, train_dataloader, optimizer)
+        #train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arcOutput, train_dataloader, optimizer)
         valid_model(epoch, faceExtraction, valid_dataset, valid_dataloader)
     print(80 * '=')
 
