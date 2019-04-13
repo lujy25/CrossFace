@@ -95,7 +95,7 @@ def main():
     arcOutput = ArcFace(in_features=args.embedding_size, out_features=train_dataset.get_class_num(), device_id=[device_id]).to(device)
     backbone_paras_only_bn, backbone_paras_wo_bn = separate_irse_bn_paras(faceExtraction)
     _, head_paras_wo_bn = separate_irse_bn_paras(arcOutput)
-    optimizer = torch.optim.SGD([{'params': backbone_paras_wo_bn + head_paras_wo_bn, 'weight_decay': 5e-4}], lr=0.1, momentum=0.9)
+    optimizer = torch.optim.SGD([{'params': backbone_paras_wo_bn + head_paras_wo_bn, 'weight_decay': 5e-4}], lr=0.002, momentum=0.9)
 
     NUM_EPOCH_WARM_UP = args.end_epoch // 25
     NUM_BATCH_WARM_UP = len(train_dataloader) * NUM_EPOCH_WARM_UP
