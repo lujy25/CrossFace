@@ -29,25 +29,42 @@ class SampleDataset(Dataset):
         self._df = pd.read_csv(csv_name)
         self._transform = transform
         self._analyze_df(self._df)
-
-    def _analyze_df(self, df):
-        self._sample_weights = []
         self._sample_faces = []
-        self._classes = []
-        for id, single_df in self._df.groupby(by=['class']):
-            sample_weight = len(self._df) / len(single_df)
-            sample_weights = [sample_weight] * len(single_df)
-            self._sample_weights.extend(sample_weights)
-            for index in single_df.index:
-                face_path, face_yaw = single_df.ix[index, ['file', 'yaw']]
-                self._sample_faces.append([id, face_path, face_yaw])
-            self._classes.append(id)
+
+    # def _analyze_df(self, df):
+    #     self._sample_weights = []
+    #     self._sample_faces = []
+    #     self._classes = []
+    #     for id, single_df in self._df.groupby(by=['class']):
+    #         sample_weight = len(self._df) / len(single_df)
+    #         sample_weights = [sample_weight] * len(single_df)
+    #         self._sample_weights.extend(sample_weights)
+    #         for index in single_df.index:
+    #             face_path, face_yaw = single_df.ix[index, ['file', 'yaw']]
+    #             self._sample_faces.append([id, face_path, face_yaw])
+    #         self._classes.append(id)
+    def _analyze_df(self, df):
+        self._class_path = dict()
+        self._class_yaw = dict()
+        for face_class, single_df in df.groupby(by=['class']):
+            self._class_path[face_class] = np.array(single_df['file'].tolist())
+            self._class_yaw[face_class] = np.array(single_df['yaw'].tolist())
+        self._classes = df['class'].unique()
+
+    def sample_faces(self):
+        self._sample_faces = []
+        for cls in self._classes:
+            select_index = np.random.choice(range(len(self._class_path[cls])), 10, replace=False)
+            select_path = self._class_path[cls][select_index]
+            select_yaw = self._class_yaw[cls][select_index]
+            for cursor in range(len(select_path)):
+                self._sample_faces.append([cls, select_path[cursor], select_yaw[cursor]])
 
     def get_class_num(self):
         return len(self._classes)
 
-    def get_samle_weight(self):
-        return self._sample_weights
+    # def get_samle_weight(self):
+    #     return self._sample_weights
 
     def __getitem__(self, idx):
         face_class, face_path, face_yaw = self._sample_faces[idx]
@@ -78,12 +95,12 @@ def get_train_face_extraction_dataloader(root_dir, csv_name, batch_size, num_wor
         csv_name=csv_name,
         transform=transform
     )
-    sampler = WeightedRandomSampler(
-        dataset.get_samle_weight(),
-        len(dataset.get_samle_weight()),
-        replacement=True
-    )
-    dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers, sampler=sampler)
+    # sampler = WeightedRandomSampler(
+    #     dataset.get_samle_weight(),
+    #     len(dataset.get_samle_weight()),
+    #     replacement=True
+    # )
+    dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)#, sampler=sampler)
     return dataset, dataloader
 
 class TripletDataset(Dataset):

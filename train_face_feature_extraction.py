@@ -46,7 +46,7 @@ top1 = AverageMeter()
 top5 = AverageMeter()
 l2_dist = PairwiseDistance(2)
 
-device_id = 1
+device_id = 0
 device = torch.device('cuda:%d' % device_id if torch.cuda.is_available() else 'cpu')
 
 
@@ -77,7 +77,7 @@ def warm_up_lr(batch, num_batch_warm_up, init_lr, optimizer):
         params['lr'] = batch * init_lr / num_batch_warm_up
 
 batch = 1
-save_fold = 'finturning-Origin'
+save_fold = 'finturning-quick-Origin'
 if not os.path.exists(os.path.join('log', save_fold)):
     os.makedirs(os.path.join('log', save_fold))
 
@@ -105,7 +105,7 @@ def main():
             schedule_lr(optimizer)
         print(80 * '=')
         print('Epoch [{}/{}]'.format(epoch, args.end_epoch))
-        train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arcOutput, train_dataloader, optimizer)
+        train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arcOutput, train_dataset, train_dataloader, optimizer)
         valid_model(epoch, faceExtraction, valid_dataset, valid_dataloader)
     print(80 * '=')
 
@@ -143,7 +143,8 @@ def valid_model(epoch, faceExtraction, valid_dataset, valid_dataloader):
         f.close()
 
 
-def train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arcOutput, train_dataloader, optimizer):
+def train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arcOutput, train_dataset, train_dataloader, optimizer):
+    train_dataset.sample_faces()
     faceExtraction.train()
     arcOutput.train()
     arc_losses.reset()
