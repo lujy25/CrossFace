@@ -77,7 +77,7 @@ def warm_up_lr(batch, num_batch_warm_up, init_lr, optimizer):
         params['lr'] = batch * init_lr / num_batch_warm_up
 
 batch = 1
-save_fold = 'finturning-quick-Origin'
+save_fold = 'not-fineturing-Origin'
 if not os.path.exists(os.path.join('log', save_fold)):
     os.makedirs(os.path.join('log', save_fold))
 
@@ -91,7 +91,7 @@ def main():
                                                                            batch_size=args.valid_batch_size,
                                                                            num_workers=args.num_workers)
     faceExtraction = Backbone().to(device)
-    faceExtraction.load_state_dict(torch.load('./model/arcface_weight/backbone_ir50_ms1m_epoch120.pth'))
+    # faceExtraction.load_state_dict(torch.load('./model/arcface_weight/backbone_ir50_ms1m_epoch120.pth'))
     arcOutput = ArcFace(in_features=args.embedding_size, out_features=train_dataset.get_class_num(), device_id=[device_id]).to(device)
     backbone_paras_only_bn, backbone_paras_wo_bn = separate_irse_bn_paras(faceExtraction)
     _, head_paras_wo_bn = separate_irse_bn_paras(arcOutput)
@@ -144,7 +144,6 @@ def valid_model(epoch, faceExtraction, valid_dataset, valid_dataloader):
 
 
 def train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arcOutput, train_dataset, train_dataloader, optimizer):
-    train_dataset.sample_faces()
     faceExtraction.train()
     arcOutput.train()
     arc_losses.reset()
