@@ -53,6 +53,7 @@ class SampleDataset(Dataset):
 
     def sample_faces(self):
         self._sample_faces = []
+        np.random.shuffle(self._classes)
         for cls in self._classes:
             select_index = np.random.choice(range(len(self._class_path[cls])), 10, replace=False)
             select_path = self._class_path[cls][select_index]
