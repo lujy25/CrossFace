@@ -46,7 +46,7 @@ top1 = AverageMeter()
 top5 = AverageMeter()
 l2_dist = PairwiseDistance(2)
 
-device_id = 1
+device_id = 0
 device = torch.device('cuda:%d' % device_id if torch.cuda.is_available() else 'cpu')
 
 
@@ -56,7 +56,7 @@ def separate_irse_bn_paras(modules):
     paras_only_bn = []
     paras_wo_bn = []
     for layer in modules:
-        if 'Backbone' in str(layer.__class__):
+        if 'models' in str(layer.__class__) and not 'ArcFace' in str(layer.__class__):
             continue
         if 'container' in str(layer.__class__):
             continue
