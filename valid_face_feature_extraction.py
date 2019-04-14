@@ -36,7 +36,8 @@ def main(save_path):
     valid_dataset, valid_dataloader = get_valid_face_extraction_dataloader(root_dir=args.root_dir,
                                                                            csv_name=args.csv_name,
                                                                            batch_size=args.batch_size,
-                                                                           num_workers=args.num_workers)
+                                                                           num_workers=args.num_workers,
+                                                                           num_triplet=args.num_triplets)
     ArcFace = Backbone().to(device)
     ArcFace.load_state_dict(torch.load('./log/ArcFace-Origin/ArcFace-Origin_BACKBONE_checkpoint_epoch120.pth')['state_dict'])
     ArcFace.eval()

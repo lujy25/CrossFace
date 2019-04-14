@@ -87,10 +87,11 @@ def get_train_face_extraction_dataloader(root_dir, csv_name, batch_size, num_wor
     return dataset, dataloader
 
 class TripletDataset(Dataset):
-    def __init__(self, root_dir, csv_name, transform=None):
+    def __init__(self, root_dir, csv_name, num_triplet=None, transform=None):
         self._root_dir = root_dir
         self._df = pd.read_csv(csv_name)
         self._transform = transform
+        self._num_triplet = num_triplet
         self._triplets = []
         self._analyze_df(self._df)
 
@@ -119,6 +120,13 @@ class TripletDataset(Dataset):
         for pos_class in self._classes:
             pos_class, neg_class, anc_path, pos_path, neg_path, anc_yaw, pos_yaw, neg_yaw = self._sample_triplet(pos_class)
             self._triplets.append([pos_class, neg_class, anc_path, pos_path, neg_path, anc_yaw, pos_yaw, neg_yaw])
+        if self._num_triplet:
+            sample_class = np.random.choice(self._classes, self._num_triplet, replace=True)
+            for pos_class in sample_class:
+                pos_class, neg_class, anc_path, pos_path, neg_path, anc_yaw, pos_yaw, neg_yaw = self._sample_triplet(
+                    pos_class)
+                self._triplets.append([pos_class, neg_class, anc_path, pos_path, neg_path, anc_yaw, pos_yaw, neg_yaw])
+
 
     def __getitem__(self, idx):
         pos_class, neg_class, anc_path, pos_path, neg_path, anc_yaw, pos_yaw, neg_yaw = self._triplets[idx]
@@ -142,7 +150,7 @@ class TripletDataset(Dataset):
         return len(self._triplets)
 
 
-def get_valid_face_extraction_dataloader(root_dir, csv_name, batch_size, num_workers):
+def get_valid_face_extraction_dataloader(root_dir, csv_name, batch_size, num_workers, num_triplet=None):
 
     transform = transforms.Compose([
         transforms.ToPILImage(),
@@ -156,7 +164,8 @@ def get_valid_face_extraction_dataloader(root_dir, csv_name, batch_size, num_wor
     dataset = TripletDataset(
         root_dir=root_dir,
         csv_name=csv_name,
-        transform=transform
+        transform=transform,
+        num_triplet=num_triplet
     )
     dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
     return dataset, dataloader
