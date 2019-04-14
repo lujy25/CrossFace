@@ -22,7 +22,7 @@ parser.add_argument('--batch-size', default=64, type=int, metavar='BS',
                     help='batch size (default: 128)')
 parser.add_argument('--num-workers', default=0, type=int, metavar='NW',
                     help='number of workers (default: 8)')
-parser.add_argument('--root-dir', default='./datasets/IJB', type=str,
+parser.add_argument('--root-dir', default='./datasets', type=str,
                     help='path to train root dir')
 parser.add_argument('--csv-name', default='./xls_csv/test_IJB.csv', type=str,
                     help='list of training images')
