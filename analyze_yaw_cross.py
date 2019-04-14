@@ -56,6 +56,38 @@ def analyze_false():
     copy_false_images('fp_path.csv')
     copy_false_images('fn_path.csv')
 
+def analyze_pose_split():
+    paths = ['./xls_csv/train_IJB.csv', './xls_csv/test_IJB.csv']
+    for path in paths:
+        count_frontal, count_profile, count_middle, count_all = 0, 0, 0, 0
+        frontal_profile, frontal_middle, profile_middle = 0, 0, 0
+        all_df = pd.read_csv(path)
+        for id, df in all_df.groupby(by=['class']):
+            frontal = df[(-15 < df['yaw']) & (df['yaw'] < 15)]
+            middle = df[((-45 <= df['yaw']) & (df['yaw'] <= -15)) | ((15 <= df['yaw']) & (df['yaw'] <= 45))]
+            profile = df[((-90 <= df['yaw']) & (df['yaw'] < -45)) | ((45 < df['yaw']) & (df['yaw'] <= 90))]
+            satisfy_frontal = False
+            satisfy_profile = False
+            satisfy_middle = False
+            if len(frontal) >= 10:
+                satisfy_frontal = True
+                count_frontal += 1
+            if len(profile) >= 4:
+                satisfy_profile = True
+                count_profile += 1
+            if len(middle) >= 10:
+                satisfy_middle = True
+                count_middle += 1
+            if satisfy_frontal and satisfy_profile and satisfy_middle:
+                count_all += 1
+            if satisfy_frontal and satisfy_profile:
+                frontal_profile += 1
+            if satisfy_frontal and satisfy_middle:
+                frontal_middle += 1
+            if satisfy_profile and satisfy_middle:
+                profile_middle += 1
+        print(count_frontal, count_profile, count_middle, count_all)
+        print(frontal_profile, frontal_middle, profile_middle)
 
 def cal_yaw_center():
     df = pd.read_csv('./xls_csv/IJB_metadata.csv')
@@ -64,15 +96,20 @@ def cal_yaw_center():
     estimator.fit(yaws)  # 聚类
     centroids = estimator.cluster_centers_  # 获取聚类中心
     print(centroids)
-    frontal = [-20, 20]
-    middle = [-40, -20, 20, 40]
-    profile = [-90, 40, 40, 90]
+
+def add_pose(file_path):
+    df = pd.read_csv(file_path)
+    for index in df.index:
+        yaw = df.ix[index, 'yaw']
+        if -15 < yaw < 15:
+            df.ix[index, 'pose'] = 0
+        if (-45 <= yaw <= -15) | (15 <= yaw <= 45):
+            df.ix[index, 'pose'] = 1
+        if (-90 <= yaw < -45) | (45 < yaw <= 90):
+            df.ix[index, 'pose'] = 2
+    df.to_csv(file_path, index=False)
 
 if __name__ == "__main__":
-    paths = ['./xls_csv/train_IJB.csv', './xls_csv/test_IJB.csv']
-    for path in paths:
-        df = pd.read_csv(path)
-        frontal = df[(-20 < df['yaw']) & (df['yaw'] < 20)]
-        middle = df[((-40 <= df['yaw']) & (df['yaw'] <= -20)) | ((20 <= df['yaw']) & (df['yaw'] <= 40))]
-        profile = df[((-90 <= df['yaw']) & (df['yaw'] < -40)) | ((40 < df['yaw']) & (df['yaw'] <= 90))]
-        print(len(frontal), len(middle), len(profile), len(df))
+    add_pose('xls_csv/train_IJB.csv')
+    add_pose('xls_csv/test_IJB.csv')
+    add_pose(('xls_csv/IJB_metadata.csv'))

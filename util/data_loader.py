@@ -28,14 +28,21 @@ class SampleDataset(Dataset):
         self._root_dir = root_dir
         self._df = pd.read_csv(csv_name)
         self._transform = transform
-        self._analyze_df(self._df)
 
-    def _analyze_df(self, df):
+    def analyze_df(self, pose_type):
+        if pose_type == Pose_Type.Frontal:
+            df = self._df[self._df['pose'] == 0]
+        elif pose_type == Pose_Type.Profile:
+            df = self._df[self._df['pose'] == 1]
+        elif pose_type == Pose_Type.Middle:
+            df = self._df[self._df['pose'] == 2]
+        else:
+            df = self._df
         self._sample_weights = []
         self._sample_faces = []
         self._classes = []
-        for id, single_df in self._df.groupby(by=['class']):
-            sample_weight = len(self._df) / len(single_df)
+        for id, single_df in df.groupby(by=['class']):
+            sample_weight = len(df) / len(single_df)
             sample_weights = [sample_weight] * len(single_df)
             self._sample_weights.extend(sample_weights)
             for index in single_df.index:
@@ -53,7 +60,7 @@ class SampleDataset(Dataset):
         face_class, face_path, face_yaw = self._sample_faces[idx]
         img_path = os.path.join(self._root_dir, str(face_path))
         face_img = io.imread(img_path)
-        sample = {'face_path': face_path, 'face_img': face_img, 'face_class': face_class, 'face_yaw': face_yaw}
+        sample = {'face_path': face_path, 'face_img': face_img, 'face_class': self._classes.index(face_class), 'face_yaw': face_yaw}
         if self._transform:
             sample['face_img'] = self._transform(sample['face_img'])
         return sample
@@ -94,15 +101,15 @@ class TripletDataset(Dataset):
         self._num_triplet = num_triplet
         self._triplets = []
 
-    def _analyze_df(self, df, pose_type):
+    def _analyze_df(self, pose_type):
         if pose_type == Pose_Type.Frontal:
-            df = df[(-15 < df['yaw']) & (df['yaw'] < 15)]
-        elif pose_type == Pose_Type.Middle:
-            df = df[((-45 <= df['yaw']) & (df['yaw'] <= -15)) | ((45 <= df['yaw']) & (df['yaw'] <= 15))]
+            df = self._df[self._df['pose'] == 0]
         elif pose_type == Pose_Type.Profile:
-            df = df[((-90 <= df['yaw']) & (df['yaw'] < -45)) | ((45 < df['yaw']) & (df['yaw'] <= 90))]
+            df = self._df[self._df['pose'] == 1]
+        elif pose_type == Pose_Type.Middle:
+            df = self._df[self._df['pose'] == 2]
         else:
-            assert pose_type == Pose_Type.All
+            df = self._df
         self._class_path = dict()
         self._class_yaw = dict()
         self._classes = []
@@ -126,7 +133,7 @@ class TripletDataset(Dataset):
         return pos_class, neg_class, anc_path, pos_path, neg_path, anc_yaw, pos_yaw, neg_yaw
 
     def sample_triplets(self, pose_type=Pose_Type.All):
-        self._analyze_df(self._df, pose_type)
+        self._analyze_df(pose_type)
         self._triplets = []
         for pos_class in self._classes:
             pos_class, neg_class, anc_path, pos_path, neg_path, anc_yaw, pos_yaw, neg_yaw = self._sample_triplet(pos_class)
