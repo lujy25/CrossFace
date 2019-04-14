@@ -6,6 +6,7 @@ from util.data_loader import get_train_face_extraction_dataloader, get_valid_fac
 from util.evaluate import *
 import os
 from util.models import *
+from util.head import *
 from tqdm import tqdm
 from util.little_block import *
 
@@ -46,7 +47,7 @@ top1 = AverageMeter()
 top5 = AverageMeter()
 l2_dist = PairwiseDistance(2)
 
-device_id = 0
+device_id = 1
 device = torch.device('cuda:%d' % device_id if torch.cuda.is_available() else 'cpu')
 
 
@@ -56,7 +57,7 @@ def separate_irse_bn_paras(modules):
     paras_only_bn = []
     paras_wo_bn = []
     for layer in modules:
-        if 'models' in str(layer.__class__) and not 'ArcFace' in str(layer.__class__):
+        if 'models' in str(layer.__class__):
             continue
         if 'container' in str(layer.__class__):
             continue
@@ -77,7 +78,7 @@ def warm_up_lr(batch, num_batch_warm_up, init_lr, optimizer):
         params['lr'] = batch * init_lr / num_batch_warm_up
 
 batch = 1
-save_fold = 'not-fineturing-Origin'
+save_fold = 'Softmax-Origin'
 if not os.path.exists(os.path.join('log', save_fold)):
     os.makedirs(os.path.join('log', save_fold))
 
@@ -91,8 +92,8 @@ def main():
                                                                            batch_size=args.valid_batch_size,
                                                                            num_workers=args.num_workers)
     faceExtraction = Backbone().to(device)
-    # faceExtraction.load_state_dict(torch.load('./model/arcface_weight/backbone_ir50_ms1m_epoch120.pth'))
-    arcOutput = ArcFace(in_features=args.embedding_size, out_features=train_dataset.get_class_num(), device_id=[device_id]).to(device)
+    faceExtraction.load_state_dict(torch.load('./model/arcface_weight/backbone_ir50_ms1m_epoch120.pth'))
+    arcOutput = Am_softmax(in_features=args.embedding_size, out_features=train_dataset.get_class_num(), device_id=[device_id]).to(device)
     backbone_paras_only_bn, backbone_paras_wo_bn = separate_irse_bn_paras(faceExtraction)
     _, head_paras_wo_bn = separate_irse_bn_paras(arcOutput)
     optimizer = torch.optim.SGD([{'params': backbone_paras_wo_bn + head_paras_wo_bn, 'weight_decay': 5e-4},
@@ -103,7 +104,7 @@ def main():
     for epoch in range(args.start_epoch, args.end_epoch):
         if epoch in [35, 65, 95]:
             schedule_lr(optimizer)
-        print(80 * '=')
+        print(40 * '=', save_fold, 40 * '=')
         print('Epoch [{}/{}]'.format(epoch, args.end_epoch))
         train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arcOutput, train_dataset, train_dataloader, optimizer)
         valid_model(epoch, faceExtraction, valid_dataset, valid_dataloader)
