@@ -4,7 +4,7 @@ import torch
 from util.models import *
 from torch.nn.modules.distance import PairwiseDistance
 from tqdm import tqdm
-from util.data_loader import get_valid_face_extraction_dataloader
+from util.data_loader import *
 import os
 import torch
 import pandas as pd
@@ -15,7 +15,7 @@ analyze_fold = './analyze_data'
 
 parser = argparse.ArgumentParser(
     description='Face Recognition using Triplet Loss')
-parser.add_argument('--num-triplets', default=100000,
+parser.add_argument('--num-triplets', default=10000,
                     type=int, metavar='NTT',
                     help='number of triplets for evaluating (default: 10000)')
 parser.add_argument('--batch-size', default=16, type=int, metavar='BS',
@@ -48,11 +48,12 @@ def main(save_path):
         }
     ]
     print(80 * '=')
-    valid(valid_dataset=valid_dataset, valid_dataloader=valid_dataloader, faceExtractionModel=faceExtractionModel, save_path=save_path)
+    for pose_type in [Pose_Type.Frontal, Pose_Type.Profile, Pose_Type.Middle, Pose_Type.All]:
+        valid(pose_type=pose_type, valid_dataset=valid_dataset, valid_dataloader=valid_dataloader, faceExtractionModel=faceExtractionModel, save_path=save_path)
     print(80 * '=')
 
-def valid(valid_dataset, valid_dataloader, faceExtractionModel, save_path):
-    valid_dataset.sample_triplets()
+def valid(pose_type, valid_dataset, valid_dataloader, faceExtractionModel, save_path):
+    valid_dataset.sample_triplets(pose_type=pose_type)
     model_labels = {}
     model_distances = {}
     model_yaw_cross = {}
@@ -120,43 +121,46 @@ def valid(valid_dataset, valid_dataloader, faceExtractionModel, save_path):
             cal_threshold_accuracy_with_yaw(model_distances[model_name], model_labels[model_name], model_yaw_cross[model_name],
                                             model_anc_paths[model_name], model_compair_paths[model_name]
                                             )
+        if not os.path.exists(os.path.join(analyze_fold, str(pose_type))):
+            os.makedirs(os.path.join(analyze_fold, str(pose_type)))
+        print("Valid in", pose_type)
         print(len(fn_anc_paths), len(fp_anc_paths))
         print(model_name, np.mean(accuracy),  np.mean(tp_cross), np.mean(fp_cross), np.mean(fn_cross))
         df = pd.DataFrame()
         df['anc_paths'] = fn_anc_paths
         df['compair_paths'] = fn_compair_paths
-        df.to_csv(os.path.join(analyze_fold, "fn_path.csv"), index=False)
+        df.to_csv(os.path.join(analyze_fold, os.path.join(str(pose_type), "fn_path.csv")), index=False)
 
         df = pd.DataFrame()
         df['anc_paths'] = fp_anc_paths
         df['compair_paths'] = fp_compair_paths
-        df.to_csv(os.path.join(analyze_fold, "fp_path.csv"), index=False)
+        df.to_csv(os.path.join(analyze_fold, os.path.join(str(pose_type), "fp_path.csv")), index=False)
 
         df = pd.DataFrame()
         df['tp_cross'] = tp_cross
-        df.to_csv(os.path.join(analyze_fold, "tp_cross.csv"), index=False)
+        df.to_csv(os.path.join(analyze_fold, os.path.join(str(pose_type), "tp_cross.csv")), index=False)
 
         df = pd.DataFrame()
         df['fp_cross'] = fp_cross
-        df.to_csv(os.path.join(analyze_fold, "fp_cross.csv"), index=False)
+        df.to_csv(os.path.join(analyze_fold, os.path.join(str(pose_type), "fp_cross.csv")), index=False)
 
         df = pd.DataFrame()
         df['tn_cross'] = tn_cross
-        df.to_csv(os.path.join(analyze_fold, "tn_cross.csv"), index=False)
+        df.to_csv(os.path.join(analyze_fold, os.path.join(str(pose_type), "tn_cross.csv")), index=False)
 
         df = pd.DataFrame()
         df['fn_cross'] = fn_cross
-        df.to_csv(os.path.join(analyze_fold, "fn_cross.csv"), index=False)
+        df.to_csv(os.path.join(analyze_fold, os.path.join(str(pose_type), "fn_cross.csv")), index=False)
 
         with open('%s.txt' % save_path, 'a') as f:
-            f.write("%s %s\n" % (model_name, str(np.mean(accuracy))))
+            f.write("%s %s %s\n" % (str(pose_type), model_name, str(np.mean(accuracy))))
             f.close()
         try:
             df = pd.read_csv(save_path + ".csv", index_col=0)
         except:
             df = pd.DataFrame()
         epoch = len(df)
-        df.loc[epoch, '%s_Accuracy' % model_name] = np.mean(accuracy)
+        df.loc[epoch, '%s_%s_Accuracy' % (str(pose_type), model_name)] = np.mean(accuracy)
 
 
 if __name__ == '__main__':

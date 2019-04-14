@@ -93,15 +93,25 @@ class TripletDataset(Dataset):
         self._transform = transform
         self._num_triplet = num_triplet
         self._triplets = []
-        self._analyze_df(self._df)
 
-    def _analyze_df(self, df):
+    def _analyze_df(self, df, pose_type):
+        if pose_type == Pose_Type.Frontal:
+            df = df[(-20 < df['yaw']) & (df['yaw'] < 20)]
+        elif pose_type == Pose_Type.Middle:
+            df = df[((-40 <= df['yaw']) & (df['yaw'] <= -20)) | ((20 <= df['yaw']) & (df['yaw'] <= 40))]
+        elif pose_type == Pose_Type.Profile:
+            df = df[((-90 <= df['yaw']) & (df['yaw'] < -40)) | ((40 < df['yaw']) & (df['yaw'] <= 90))]
+        else:
+            assert pose_type == Pose_Type.All
         self._class_path = dict()
         self._class_yaw = dict()
+        self._classes = []
         for face_class, single_df in df.groupby(by=['class']):
+            if len(single_df) < 2:
+                continue
             self._class_path[face_class] = np.array(single_df['file'].tolist())
             self._class_yaw[face_class] = np.array(single_df['yaw'].tolist())
-        self._classes = df['class'].unique()
+            self._classes.append(face_class)
 
     def _sample_triplet(self, pos_class):
         neg_class = np.random.choice(self._classes, 1, replace=False)[0]
@@ -115,7 +125,8 @@ class TripletDataset(Dataset):
         neg_yaw = self._class_yaw[neg_class][neg_index]
         return pos_class, neg_class, anc_path, pos_path, neg_path, anc_yaw, pos_yaw, neg_yaw
 
-    def sample_triplets(self):
+    def sample_triplets(self, pose_type=Pose_Type.All):
+        self._analyze_df(self._df, pose_type)
         self._triplets = []
         for pos_class in self._classes:
             pos_class, neg_class, anc_path, pos_path, neg_path, anc_yaw, pos_yaw, neg_yaw = self._sample_triplet(pos_class)

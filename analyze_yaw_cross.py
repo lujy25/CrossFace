@@ -1,6 +1,8 @@
 import pandas as pd
 import shutil
 import os
+import numpy as np
+from sklearn.cluster import KMeans
 analyze_fold = './analyze_data'
 
 
@@ -49,7 +51,28 @@ def copy_false_images(file_name):
         shutil.copy(os.path.join(root_dir, compair_path),
                     os.path.join(save_dir, os.path.join(str(index), 'compair_image.') + compair_path.split(".")[-1]))
 
-if __name__ == "__main__":
+def analyze_false():
     cal_cross()
     copy_false_images('fp_path.csv')
     copy_false_images('fn_path.csv')
+
+
+def cal_yaw_center():
+    df = pd.read_csv('./xls_csv/IJB_metadata.csv')
+    yaws = np.array([[yaw] for yaw in df['yaw'].tolist()])
+    estimator = KMeans(n_clusters=5)  # 构造聚类器
+    estimator.fit(yaws)  # 聚类
+    centroids = estimator.cluster_centers_  # 获取聚类中心
+    print(centroids)
+    frontal = [-20, 20]
+    middle = [-40, -20, 20, 40]
+    profile = [-90, 40, 40, 90]
+
+if __name__ == "__main__":
+    paths = ['./xls_csv/train_IJB.csv', './xls_csv/test_IJB.csv']
+    for path in paths:
+        df = pd.read_csv(path)
+        frontal = df[(-20 < df['yaw']) & (df['yaw'] < 20)]
+        middle = df[((-40 <= df['yaw']) & (df['yaw'] <= -20)) | ((20 <= df['yaw']) & (df['yaw'] <= 40))]
+        profile = df[((-90 <= df['yaw']) & (df['yaw'] < -40)) | ((40 < df['yaw']) & (df['yaw'] <= 90))]
+        print(len(frontal), len(middle), len(profile), len(df))
