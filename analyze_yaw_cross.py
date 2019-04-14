@@ -1,4 +1,5 @@
 import pandas as pd
+import shutil
 import os
 analyze_fold = './analyze_data'
 
@@ -34,5 +35,20 @@ def cal_cross():
     df.to_excel(os.path.join(analyze_fold, "cross_count.xls"))
 
 
+def copy_false_images(file_name):
+    root_dir = 'datasets'
+    save_dir = '../Images/' + file_name.split("_")[0]
+    df = pd.read_csv(file_name)
+    for index in df.index:
+        anc_path, compair_path = df.ix[index, ['anc_paths', 'compair_paths']]
+        if not os.path.exists(os.path.join(save_dir, str(index))):
+            os.makedirs(os.path.join(save_dir, str(index)))
+        shutil.copy(os.path.join(root_dir, anc_path),
+                    os.path.join(root_dir, os.path.join(str(index), 'anc_image.' + anc_path.split(".")[-1])))
+        shutil.copy(os.path.join(root_dir, compair_path),
+                    os.path.join(root_dir, os.path.join(str(index), 'compair_image.') + compair_path.split(".")[-1]))
+
 if __name__ == "__main__":
     cal_cross()
+    copy_false_images(os.path.join(analyze_fold, 'fp_cross.csv'))
+    copy_false_images(os.path.join(analyze_fold, 'fn_cross.csv'))
