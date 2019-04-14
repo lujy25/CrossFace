@@ -15,7 +15,7 @@ analyze_fold = './analyze_data'
 
 parser = argparse.ArgumentParser(
     description='Face Recognition using Triplet Loss')
-parser.add_argument('--num-triplets', default=100000,
+parser.add_argument('--num-triplets', default=10000,
                     type=int, metavar='NTT',
                     help='number of triplets for evaluating (default: 10000)')
 parser.add_argument('--batch-size', default=16, type=int, metavar='BS',
@@ -48,7 +48,6 @@ def main(save_path):
     ]
     print(80 * '=')
     valid(valid_dataset=valid_dataset, valid_dataloader=valid_dataloader, faceExtractionModel=faceExtractionModel, save_path=save_path)
-    df.to_csv(save_path + ".csv")
     print(80 * '=')
 
 def valid(valid_dataset, valid_dataloader, faceExtractionModel, save_path):
