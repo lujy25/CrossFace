@@ -98,8 +98,8 @@ class TripletDataset(Dataset):
         self._class_path = dict()
         self._class_yaw = dict()
         for face_class, single_df in df.groupby(by=['class']):
-            self._class_path[face_class] = single_df['file'].tolist()
-            self._class_yaw[face_class] = single_df['yaw'].tolist()
+            self._class_path[face_class] = np.array(single_df['file'].tolist())
+            self._class_yaw[face_class] = np.array(single_df['yaw'].tolist())
         self._classes = df['class'].unique()
 
     def _sample_triplet(self, pos_class):
