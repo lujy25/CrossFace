@@ -21,4 +21,5 @@ train_loader = DataLoader(
     train_dataset, batch_size=10, num_workers=1, sampler=sampler)
 
 for i, sample in enumerate(train_loader):
+    print("Add at shell")
     print(sample)
