@@ -96,11 +96,11 @@ class TripletDataset(Dataset):
 
     def _analyze_df(self, df, pose_type):
         if pose_type == Pose_Type.Frontal:
-            df = df[(-20 < df['yaw']) & (df['yaw'] < 20)]
+            df = df[(-15 < df['yaw']) & (df['yaw'] < 15)]
         elif pose_type == Pose_Type.Middle:
-            df = df[((-40 <= df['yaw']) & (df['yaw'] <= -20)) | ((20 <= df['yaw']) & (df['yaw'] <= 40))]
+            df = df[((-45 <= df['yaw']) & (df['yaw'] <= -15)) | ((45 <= df['yaw']) & (df['yaw'] <= 15))]
         elif pose_type == Pose_Type.Profile:
-            df = df[((-90 <= df['yaw']) & (df['yaw'] < -40)) | ((40 < df['yaw']) & (df['yaw'] <= 90))]
+            df = df[((-90 <= df['yaw']) & (df['yaw'] < -45)) | ((45 < df['yaw']) & (df['yaw'] <= 90))]
         else:
             assert pose_type == Pose_Type.All
         self._class_path = dict()
