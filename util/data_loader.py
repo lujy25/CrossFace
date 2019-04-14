@@ -96,26 +96,32 @@ class TripletDataset(Dataset):
 
     def _analyze_df(self, df):
         self._class_path = dict()
+        self._class_yaw = dict()
         for face_class, single_df in df.groupby(by=['class']):
             self._class_path[face_class] = single_df['file'].tolist()
+            self._class_yaw[face_class] = single_df['yaw'].tolist()
         self._classes = df['class'].unique()
 
     def _sample_triplet(self, pos_class):
         neg_class = np.random.choice(self._classes, 1, replace=False)[0]
         while neg_class == pos_class:
             neg_class = np.random.choice(self._classes, 1, replace=False)[0]
-        anc_path, pos_path = np.random.choice(self._class_path[pos_class], 2, replace=False)
-        neg_path = np.random.choice(self._class_path[neg_class], 1, replace=False)[0]
-        return pos_class, neg_class, anc_path, pos_path, neg_path
+        anc_pos_index = np.random.choice(range(len(self._class_path[pos_class])), 2, replace=False)
+        anc_path, pos_path = self._class_path[pos_class][anc_pos_index]
+        anc_yaw, pos_yaw = self._class_yaw[pos_class][anc_pos_index]
+        neg_index = np.random.choice(range(len(self._class_path[neg_class])), 1, replace=False)[0]
+        neg_path = self._class_path[neg_class][neg_index]
+        neg_yaw = self._class_yaw[neg_class][neg_index]
+        return pos_class, neg_class, anc_path, pos_path, neg_path, anc_yaw, pos_yaw, neg_yaw
 
     def sample_triplets(self):
         self._triplets = []
         for pos_class in self._classes:
-            pos_class, neg_class, anc_path, pos_path, neg_path = self._sample_triplet(pos_class)
-            self._triplets.append([pos_class, neg_class, anc_path, pos_path, neg_path])
+            pos_class, neg_class, anc_path, pos_path, neg_path, anc_yaw, pos_yaw, neg_yaw = self._sample_triplet(pos_class)
+            self._triplets.append([pos_class, neg_class, anc_path, pos_path, neg_path, anc_yaw, pos_yaw, neg_yaw])
 
     def __getitem__(self, idx):
-        pos_class, neg_class, anc_path, pos_path, neg_path = self._triplets[idx]
+        pos_class, neg_class, anc_path, pos_path, neg_path, anc_yaw, pos_yaw, neg_yaw = self._triplets[idx]
         anc_img_path = os.path.join(self._root_dir, str(anc_path))
         pos_img_path = os.path.join(self._root_dir, str(pos_path))
         neg_img_path = os.path.join(self._root_dir, str(neg_path))
@@ -123,6 +129,7 @@ class TripletDataset(Dataset):
         pos_face_img = io.imread(pos_img_path)
         neg_face_img = io.imread(neg_img_path)
         sample = {'anc_path': anc_path, 'pos_path': pos_path, 'neg_path': neg_path,
+                  'anc_yaw': anc_yaw, 'pos_yaw': pos_yaw, 'neg_yaw': neg_yaw,
                   'anc_img': anc_face_img, 'pos_img': pos_face_img, 'neg_img': neg_face_img,
                   'pos_class': pos_class, 'neg_class': neg_class}
         if self._transform:
