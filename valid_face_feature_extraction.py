@@ -69,7 +69,7 @@ def valid(valid_dataset, valid_dataloader, faceExtractionModel, save_path):
         exec('model_compair_paths["%s"]=%s_compair_paths' % (model_name, model_name))
 
 
-    for batch_idx, batch_sample in tqdm(enumerate(valid_dataloader)):
+    for batch_sample in tqdm(valid_dataloader):
         anc_yaw = batch_sample['anc_yaw'].data.cpu().numpy()
         pos_yaw = batch_sample['pos_yaw'].data.cpu().numpy()
         neg_yaw = batch_sample['neg_yaw'].data.cpu().numpy()
