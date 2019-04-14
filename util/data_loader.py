@@ -137,7 +137,7 @@ class TripletDataset(Dataset):
         pos_face_img = io.imread(pos_img_path)
         neg_face_img = io.imread(neg_img_path)
         sample = {'anc_path': anc_path, 'pos_path': pos_path, 'neg_path': neg_path,
-                  'anc_yaw': anc_yaw, 'pos_yaw': pos_yaw, 'neg_yaw': neg_yaw,
+                  'anc_yaw': abs(anc_yaw), 'pos_yaw': abs(pos_yaw), 'neg_yaw': abs(neg_yaw),
                   'anc_img': anc_face_img, 'pos_img': pos_face_img, 'neg_img': neg_face_img,
                   'pos_class': pos_class, 'neg_class': neg_class}
         if self._transform:
