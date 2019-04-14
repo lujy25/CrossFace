@@ -15,7 +15,7 @@ analyze_fold = './analyze_data'
 
 parser = argparse.ArgumentParser(
     description='Face Recognition using Triplet Loss')
-parser.add_argument('--num-triplets', default=10000,
+parser.add_argument('--num-triplets', default=100000,
                     type=int, metavar='NTT',
                     help='number of triplets for evaluating (default: 10000)')
 parser.add_argument('--batch-size', default=16, type=int, metavar='BS',
