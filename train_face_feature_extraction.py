@@ -78,7 +78,7 @@ def warm_up_lr(batch, num_batch_warm_up, init_lr, optimizer):
         params['lr'] = batch * init_lr / num_batch_warm_up
 
 batch = 1
-save_fold = 'Softmax-Origin'
+save_fold = 'CosFace-Origin'
 if not os.path.exists(os.path.join('log', save_fold)):
     os.makedirs(os.path.join('log', save_fold))
 
@@ -93,7 +93,7 @@ def main():
                                                                            num_workers=args.num_workers)
     faceExtraction = Backbone().to(device)
     faceExtraction.load_state_dict(torch.load('./model/arcface_weight/backbone_ir50_ms1m_epoch120.pth'))
-    arcOutput = Am_softmax(in_features=args.embedding_size, out_features=train_dataset.get_class_num(), device_id=[device_id]).to(device)
+    arcOutput = CosFace(in_features=args.embedding_size, out_features=train_dataset.get_class_num(), device_id=[device_id]).to(device)
     backbone_paras_only_bn, backbone_paras_wo_bn = separate_irse_bn_paras(faceExtraction)
     _, head_paras_wo_bn = separate_irse_bn_paras(arcOutput)
     optimizer = torch.optim.SGD([{'params': backbone_paras_wo_bn + head_paras_wo_bn, 'weight_decay': 5e-4},
