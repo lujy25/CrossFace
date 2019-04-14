@@ -1,0 +1,4 @@
+---Calculate Accuracy---
+ArcFace 0.921539190898
+---Calculate Accuracy---
+ArcFace 0.919799621571
