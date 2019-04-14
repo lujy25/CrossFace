@@ -83,16 +83,17 @@ if not os.path.exists(os.path.join('log', save_fold)):
     os.makedirs(os.path.join('log', save_fold))
 
 def main():
+    pose_type = Pose_Type.Frontal
     train_dataset, train_dataloader = get_train_face_extraction_dataloader(root_dir=args.train_root_dir,
                                                             csv_name=args.train_csv_name,
                                                             batch_size=args.train_batch_size,
-                                                            num_workers=args.num_workers)
+                                                            num_workers=args.num_workers,
+                                                                           pose_type=pose_type)
     valid_dataset, valid_dataloader = get_valid_face_extraction_dataloader(root_dir=args.valid_root_dir,
                                                                            csv_name=args.valid_csv_name,
                                                                            batch_size=args.valid_batch_size,
                                                                            num_workers=args.num_workers)
-    pose_type = Pose_Type.Frontal
-    train_dataset.analyze_df(pose_type=pose_type)
+
     faceExtraction = Backbone().to(device)
     faceExtraction.load_state_dict(torch.load('./log/ArcFace-Origin/ArcFace-Origin_BACKBONE_checkpoint_epoch120.pth')['state_dict'])
     arcOutput = ArcFace(in_features=args.embedding_size, out_features=train_dataset.get_class_num(), device_id=[device_id]).to(device)
