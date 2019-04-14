@@ -78,12 +78,12 @@ def warm_up_lr(batch, num_batch_warm_up, init_lr, optimizer):
         params['lr'] = batch * init_lr / num_batch_warm_up
 
 batch = 1
-save_fold = 'ArcFace-Frontal'
+save_fold = 'ArcFace-Profile'
 if not os.path.exists(os.path.join('log', save_fold)):
     os.makedirs(os.path.join('log', save_fold))
 
 def main():
-    pose_type = Pose_Type.Frontal
+    pose_type = Pose_Type.Profile
     train_dataset, train_dataloader = get_train_face_extraction_dataloader(root_dir=args.train_root_dir,
                                                             csv_name=args.train_csv_name,
                                                             batch_size=args.train_batch_size,
