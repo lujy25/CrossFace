@@ -71,6 +71,8 @@ def valid(pose_type, valid_dataset, valid_dataloader, save_path):
         anc_path = batch_sample['anc_path']
         pos_path = batch_sample['pos_path']
         neg_path = batch_sample['neg_path']
+        print(anc_img_path)
+        print([cal_embed(path) for path in anc_img_path])
 
         anc_embed = torch.FloatTensor(np.stack([cal_embed(path) for path in anc_img_path])).to(device)
         pos_embed = torch.FloatTensor(np.stack([cal_embed(path) for path in pos_img_path])).to(device)
