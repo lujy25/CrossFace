@@ -116,6 +116,7 @@ class TripletDataset(Dataset):
         print(shape)
         print(self._facerec)
         face_descriptor = self._facerec.compute_face_descriptor(img, shape)
+        print(face_descriptor)
         return np.array([elem for elem in face_descriptor])
 
     def _analyze_df(self, pose_type):
