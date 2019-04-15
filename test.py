@@ -10,7 +10,7 @@
 # import pandas as pd
 # from util.little_block import *
 # from util.evaluate import *
-
+import torch
 import cv2
 import dlib
 from torch.nn.modules.distance import PairwiseDistance
