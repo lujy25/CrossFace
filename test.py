@@ -1,9 +1,10 @@
 import cv2
 import dlib
+from torch.nn.modules.distance import PairwiseDistance
 import numpy as np
 shape_predict = dlib.shape_predictor('model/dlib/shape_predictor_68_face_landmarks.dat')
 facerec = dlib.face_recognition_model_v1('model/dlib/dlib_face_recognition_resnet_model_v1.dat')
-
+l2_dist = PairwiseDistance(2)
 def cal_embed(file_path):
     img = cv2.imread(file_path)
     rec = dlib.rectangle(0, 0, img.shape[1], img.shape[0])
