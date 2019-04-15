@@ -11,7 +11,8 @@ import pandas as pd
 from util.little_block import *
 from util.evaluate import *
 analyze_fold = './analyze_data'
-
+shape_predict = dlib.shape_predictor('model/dlib/shape_predictor_68_face_landmarks.dat')
+facerec = dlib.face_recognition_model_v1('model/dlib/dlib_face_recognition_resnet_model_v1.dat')
 
 parser = argparse.ArgumentParser(
     description='Face Recognition using Triplet Loss')
@@ -31,6 +32,13 @@ args = parser.parse_args()
 device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 l2_dist = PairwiseDistance(2)
 
+
+def cal_embed(file_path):
+    img = cv2.imread(file_path)
+    rec = dlib.rectangle(0, 0, img.shape[1], img.shape[0])
+    shape = shape_predict(img, rec)
+    face_descriptor = facerec.compute_face_descriptor(img, shape)
+    return np.array([elem for elem in face_descriptor])
 
 def main(save_path):
     valid_dataset, valid_dataloader = get_valid_face_extraction_dataloader(root_dir=args.root_dir,
@@ -56,17 +64,17 @@ def valid(pose_type, valid_dataset, valid_dataloader, save_path):
         pos_yaw = batch_sample['pos_yaw'].data.cpu().numpy()
         neg_yaw = batch_sample['neg_yaw'].data.cpu().numpy()
 
-        anc_embed = batch_sample['anc_embed'].to(device)
-        pos_embed = batch_sample['pos_embed'].to(device)
-        neg_embed = batch_sample['neg_embed'].to(device)
+        anc_img_path = batch_sample['anc_img_path']
+        pos_img_path = batch_sample['pos_img_path']
+        neg_img_path = batch_sample['neg_img_path']
 
         anc_path = batch_sample['anc_path']
         pos_path = batch_sample['pos_path']
         neg_path = batch_sample['neg_path']
 
-        print(anc_embed)
-        assert False
-
+        anc_embed = torch.FloatTensor(np.stack([cal_embed(path) for path in anc_img_path])).to(device)
+        pos_embed = torch.FloatTensor(np.stack([cal_embed(path) for path in pos_img_path])).to(device)
+        neg_embed = torch.FloatTensor(np.stack([cal_embed(path) for path in neg_img_path])).to(device)
         dists = l2_dist.forward(anc_embed, pos_embed)
         distances.append(dists.data.cpu().numpy())
         labels.append(np.ones(dists.size(0)))
