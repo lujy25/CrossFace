@@ -114,6 +114,7 @@ class TripletDataset(Dataset):
         print(rec)
         shape = self._shape_predict(img, rec)
         print(shape)
+        print(self._facerec)
         face_descriptor = self._facerec.compute_face_descriptor(img, shape)
         return np.array([elem for elem in face_descriptor])
 
