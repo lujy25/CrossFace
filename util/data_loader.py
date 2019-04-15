@@ -7,6 +7,8 @@ from torchvision import transforms
 from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 from enum import Enum
 import random
+import cv2
+import dlib
 
 class Sample_Type(Enum):
     Frontal2Frontal = 1
@@ -60,7 +62,7 @@ class SampleDataset(Dataset):
         face_class, face_path, face_yaw = self._sample_faces[idx]
         img_path = os.path.join(self._root_dir, str(face_path))
         face_img = io.imread(img_path)
-        sample = {'face_path': face_path, 'face_img': face_img, 'face_class': self._classes.index(face_class), 'face_yaw': face_yaw}
+        sample = {'face_path': face_path, 'face_img': face_img, 'face_class': face_class, 'face_yaw': face_yaw}
         if self._transform:
             sample['face_img'] = self._transform(sample['face_img'])
         return sample
@@ -95,12 +97,23 @@ def get_train_face_extraction_dataloader(root_dir, csv_name, batch_size, num_wor
     return dataset, dataloader
 
 class TripletDataset(Dataset):
-    def __init__(self, root_dir, csv_name, num_triplet=None, transform=None):
+    def __init__(self, root_dir, csv_name, load_img, num_triplet=None, transform=None):
         self._root_dir = root_dir
         self._df = pd.read_csv(csv_name)
         self._transform = transform
         self._num_triplet = num_triplet
         self._triplets = []
+        self._load_img = load_img
+        if not self._load_img:
+            self._shape_predict = dlib.shape_predictor('model/dlib/shape_predictor_68_face_landmarks.dat')
+            self._facerec = dlib.face_recognition_model_v1('model/dlib/dlib_face_recognition_resnet_model_v1.dat')
+
+    def cal_embed(self, file_path):
+        img = cv2.imread(file_path)
+        rec = dlib.rectangle(0, 0, img.shape[1], img.shape[0])
+        shape = self._shape_predict(img, rec)
+        face_descriptor = self._facerec.compute_face_descriptor(img, shape)
+        return np.array([elem for elem in face_descriptor])
 
     def _analyze_df(self, pose_type):
         if pose_type == Pose_Type.Frontal:
@@ -152,24 +165,32 @@ class TripletDataset(Dataset):
         anc_img_path = os.path.join(self._root_dir, str(anc_path))
         pos_img_path = os.path.join(self._root_dir, str(pos_path))
         neg_img_path = os.path.join(self._root_dir, str(neg_path))
-        anc_face_img = io.imread(anc_img_path)
-        pos_face_img = io.imread(pos_img_path)
-        neg_face_img = io.imread(neg_img_path)
-        sample = {'anc_path': anc_path, 'pos_path': pos_path, 'neg_path': neg_path,
-                  'anc_yaw': abs(anc_yaw), 'pos_yaw': abs(pos_yaw), 'neg_yaw': abs(neg_yaw),
-                  'anc_img': anc_face_img, 'pos_img': pos_face_img, 'neg_img': neg_face_img,
-                  'pos_class': pos_class, 'neg_class': neg_class}
-        if self._transform:
-            sample['anc_img'] = self._transform(sample['anc_img'])
-            sample['pos_img'] = self._transform(sample['pos_img'])
-            sample['neg_img'] = self._transform(sample['neg_img'])
+        if self._load_img:
+            anc_face_img = io.imread(anc_img_path)
+            pos_face_img = io.imread(pos_img_path)
+            neg_face_img = io.imread(neg_img_path)
+            sample = {'anc_path': anc_path, 'pos_path': pos_path, 'neg_path': neg_path,
+                      'anc_yaw': abs(anc_yaw), 'pos_yaw': abs(pos_yaw), 'neg_yaw': abs(neg_yaw),
+                      'anc_img': anc_face_img, 'pos_img': pos_face_img, 'neg_img': neg_face_img,
+                      'pos_class': pos_class, 'neg_class': neg_class}
+            if self._transform:
+                sample['anc_img'] = self._transform(sample['anc_img'])
+                sample['pos_img'] = self._transform(sample['pos_img'])
+                sample['neg_img'] = self._transform(sample['neg_img'])
+        else:
+            sample = {'anc_path': anc_path, 'pos_path': pos_path, 'neg_path': neg_path,
+                      'pos_class': pos_class, 'neg_class': neg_class,
+                      'anc_yaw': abs(anc_yaw), 'pos_yaw': abs(pos_yaw), 'neg_yaw': abs(neg_yaw)}
+            sample['anc_embed'] = self.cal_embed(anc_img_path)
+            sample['pos_embed'] = self.cal_embed(pos_img_path)
+            sample['neg_embed'] = self.cal_embed(neg_img_path)
         return sample
 
     def __len__(self):
         return len(self._triplets)
 
 
-def get_valid_face_extraction_dataloader(root_dir, csv_name, batch_size, num_workers, num_triplet=None):
+def get_valid_face_extraction_dataloader(root_dir, csv_name, batch_size, num_workers, load_img=True, num_triplet=None):
 
     transform = transforms.Compose([
         transforms.ToPILImage(),
@@ -184,7 +205,8 @@ def get_valid_face_extraction_dataloader(root_dir, csv_name, batch_size, num_wor
         root_dir=root_dir,
         csv_name=csv_name,
         transform=transform,
-        num_triplet=num_triplet
+        num_triplet=num_triplet,
+        load_img=load_img,
     )
     dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
     return dataset, dataloader
