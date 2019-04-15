@@ -1,25 +1,19 @@
-import torch
+import cv2
+import dlib
 import numpy as np
-from torch.utils.data import DataLoader, WeightedRandomSampler, Dataset
+shape_predict = dlib.shape_predictor('model/dlib/shape_predictor_68_face_landmarks.dat')
+facerec = dlib.face_recognition_model_v1('model/dlib/dlib_face_recognition_resnet_model_v1.dat')
 
-class PoseDataset(Dataset):
-    def __init__(self):
-        self._data = range(10)
+def cal_embed(file_path):
+    img = cv2.imread(file_path)
+    rec = dlib.rectangle(0, 0, img.shape[1], img.shape[0])
+    print(rec)
+    shape = shape_predict(img, rec)
+    print(shape)
+    print(facerec)
+    face_descriptor = facerec.compute_face_descriptor(img, shape)
+    return np.array([elem for elem in face_descriptor])
 
-    def __getitem__(self, idx):
-        return self._data[idx]
-
-    def __len__(self):
-        return len(self._data)
-
-
-samples_weight = [0.1] * 6
-sampler = WeightedRandomSampler(samples_weight, len(samples_weight), replacement=True)
-
-train_dataset = PoseDataset()
-train_loader = DataLoader(
-    train_dataset, batch_size=10, num_workers=1, sampler=sampler)
-
-for i, sample in enumerate(train_loader):
-    print("Add at shell")
-    print(sample)
+if __name__ == "__main__":
+    img_path = './datasets/19/img_1373.jpg'
+    print(cal_embed(img_path))
