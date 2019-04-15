@@ -15,9 +15,9 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--num-triplets', default=10000,
                     type=int, metavar='NTT',
                     help='number of triplets for evaluating (default: 10000)')
-parser.add_argument('--batch-size', default=16, type=int, metavar='BS',
+parser.add_argument('--batch-size', default=128, type=int, metavar='BS',
                     help='batch size (default: 128)')
-parser.add_argument('--num-workers', default=0, type=int, metavar='NW',
+parser.add_argument('--num-workers', default=4, type=int, metavar='NW',
                     help='number of workers (default: 8)')
 parser.add_argument('--root-dir', default='./datasets', type=str,
                     help='path to train root dir')
@@ -60,7 +60,7 @@ def valid(pose_type, valid_dataset, valid_dataloader, save_path):
         anc_path = batch_sample['anc_path']
         pos_path = batch_sample['pos_path']
         neg_path = batch_sample['neg_path']
-        
+
         dists = l2_dist.forward(anc_embed, pos_embed)
         distances.append(dists.data.cpu().numpy())
         labels.append(np.ones(dists.size(0)))
