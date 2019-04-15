@@ -47,7 +47,7 @@ top1 = AverageMeter()
 top5 = AverageMeter()
 l2_dist = PairwiseDistance(2)
 
-device_id = 0
+device_id = 1
 device = torch.device('cuda:%d' % device_id if torch.cuda.is_available() else 'cpu')
 
 
