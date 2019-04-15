@@ -32,9 +32,9 @@ class SampleDataset(Dataset):
     def analyze_df(self, pose_type):
         if pose_type == Pose_Type.Frontal:
             df = self._df[self._df['pose'] == 0]
-        elif pose_type == Pose_Type.Profile:
-            df = self._df[self._df['pose'] == 1]
         elif pose_type == Pose_Type.Middle:
+            df = self._df[self._df['pose'] == 1]
+        elif pose_type == Pose_Type.Profile:
             df = self._df[self._df['pose'] == 2]
         else:
             df = self._df
@@ -105,9 +105,9 @@ class TripletDataset(Dataset):
     def _analyze_df(self, pose_type):
         if pose_type == Pose_Type.Frontal:
             df = self._df[self._df['pose'] == 0]
-        elif pose_type == Pose_Type.Profile:
-            df = self._df[self._df['pose'] == 1]
         elif pose_type == Pose_Type.Middle:
+            df = self._df[self._df['pose'] == 1]
+        elif pose_type == Pose_Type.Profile:
             df = self._df[self._df['pose'] == 2]
         else:
             df = self._df
