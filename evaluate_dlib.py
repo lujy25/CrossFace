@@ -41,6 +41,8 @@ def cal_embed(file_path):
     return np.array([elem for elem in face_descriptor])
 
 def main(save_path):
+    img_path = './datasets/19/frames_10565.png'
+    print(cal_embed(file_path=img_path))
     valid_dataset, valid_dataloader = get_valid_face_extraction_dataloader(root_dir=args.root_dir,
                                                                            csv_name=args.csv_name,
                                                                            batch_size=args.batch_size,
