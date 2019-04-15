@@ -155,7 +155,7 @@ def valid_model(pose_type, faceExtraction, valid_dataset, valid_dataloader):
 
 
 def train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arcOutput, train_postype_dataloader, train_all_dataloader, optimizer):
-    if epoch % 2 == 0:
+    if epoch % 2 == 0 and epoch > 0:
         train_dataloader = train_postype_dataloader
     else:
         train_dataloader = train_all_dataloader
