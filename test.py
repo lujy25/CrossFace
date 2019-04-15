@@ -10,23 +10,7 @@ import torch
 import pandas as pd
 from util.little_block import *
 from util.evaluate import *
-analyze_fold = './analyze_data'
 
-parser = argparse.ArgumentParser(
-    description='Face Recognition using Triplet Loss')
-parser.add_argument('--num-triplets', default=10000,
-                    type=int, metavar='NTT',
-                    help='number of triplets for evaluating (default: 10000)')
-parser.add_argument('--batch-size', default=16, type=int, metavar='BS',
-                    help='batch size (default: 128)')
-parser.add_argument('--num-workers', default=0, type=int, metavar='NW',
-                    help='number of workers (default: 8)')
-parser.add_argument('--root-dir', default='./datasets', type=str,
-                    help='path to train root dir')
-parser.add_argument('--csv-name', default='./xls_csv/test_IJB.csv', type=str,
-                    help='list of training images')
-
-args = parser.parse_args()
 import cv2
 import dlib
 from torch.nn.modules.distance import PairwiseDistance
