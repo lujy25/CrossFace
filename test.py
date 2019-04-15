@@ -4,7 +4,8 @@ import torch
 from util.models import *
 from torch.nn.modules.distance import PairwiseDistance
 from tqdm import tqdm
-from util.data_loader import *
+# from util.data_loader import *
+import dlib
 import os
 import torch
 import pandas as pd
