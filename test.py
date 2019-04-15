@@ -6,6 +6,7 @@ from torch.nn.modules.distance import PairwiseDistance
 from tqdm import tqdm
 # from util.data_loader import *
 import dlib
+import cv2
 import os
 import torch
 import pandas as pd
