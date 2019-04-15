@@ -16,4 +16,4 @@ def cal_embed(file_path):
 
 if __name__ == "__main__":
     img_path = './datasets/19/img_1373.jpg'
-    cal_embed(img_path)
+    print(cal_embed(img_path))
