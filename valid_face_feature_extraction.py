@@ -47,7 +47,7 @@ def main(save_path):
     CosFace.eval()
 
     ArcFrontal = Backbone().to(device)
-    ArcFrontal.load_state_dict(torch.load('./log/ArcFace-Frontal-Origin/ArcFace-Frontal-Origin_BACKBONE_checkpoint_epoch120.pth')['state_dict'])
+    ArcFrontal.load_state_dict(torch.load('./log/ArcFace-Frontal/ArcFace-Frontal_BACKBONE_checkpoint_epoch120.pth')['state_dict'])
     ArcFrontal.eval()
 
     faceExtractionModel = [
