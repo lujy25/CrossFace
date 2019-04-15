@@ -100,6 +100,8 @@ def valid(pose_type, valid_dataset, valid_dataloader, faceExtractionModel, save_
         pos_img = batch_sample['pos_img'].to(device)
         neg_img = batch_sample['neg_img'].to(device)
 
+        print(anc_img)
+        assert False
         for index in range(0, len(faceExtractionModel)):
             model_name = faceExtractionModel[index]['name']
             model_net = faceExtractionModel[index]['model']
