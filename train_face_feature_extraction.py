@@ -84,11 +84,18 @@ if not os.path.exists(os.path.join('log', save_fold)):
 
 def main():
     pose_type = Pose_Type.Profile
-    train_dataset, train_dataloader = get_train_face_extraction_dataloader(root_dir=args.train_root_dir,
+    train_all_dataset, train_all_dataloader = get_train_face_extraction_dataloader(root_dir=args.train_root_dir,
                                                             csv_name=args.train_csv_name,
                                                             batch_size=args.train_batch_size,
                                                             num_workers=args.num_workers,
-                                                                           pose_type=pose_type)
+                                                                           pose_type=Pose_Type.All)
+
+    train_posetype_dataset, train_postype_dataloader = get_train_face_extraction_dataloader(root_dir=args.train_root_dir,
+                                                                                   csv_name=args.train_csv_name,
+                                                                                   batch_size=args.train_batch_size,
+                                                                                   num_workers=args.num_workers,
+                                                                                   pose_type=pose_type)
+
     valid_dataset, valid_dataloader = get_valid_face_extraction_dataloader(root_dir=args.valid_root_dir,
                                                                            csv_name=args.valid_csv_name,
                                                                            batch_size=args.valid_batch_size,
@@ -96,20 +103,20 @@ def main():
 
     faceExtraction = Backbone().to(device)
     faceExtraction.load_state_dict(torch.load('./model/arcface_weight/backbone_ir50_ms1m_epoch120.pth'))
-    arcOutput = ArcFace(in_features=args.embedding_size, out_features=train_dataset.get_class_num(), device_id=[device_id]).to(device)
+    arcOutput = ArcFace(in_features=args.embedding_size, out_features=train_all_dataset.get_class_num(), device_id=[device_id]).to(device)
     backbone_paras_only_bn, backbone_paras_wo_bn = separate_irse_bn_paras(faceExtraction)
     _, head_paras_wo_bn = separate_irse_bn_paras(arcOutput)
     optimizer = torch.optim.SGD([{'params': backbone_paras_wo_bn + head_paras_wo_bn, 'weight_decay': 5e-4},
                                  {'params': backbone_paras_only_bn}], lr=0.1, momentum=0.9)
 
     NUM_EPOCH_WARM_UP = args.end_epoch // 25
-    NUM_BATCH_WARM_UP = len(train_dataloader) * NUM_EPOCH_WARM_UP
+    NUM_BATCH_WARM_UP = (len(train_all_dataloader) + len(train_postype_dataloader)) * NUM_EPOCH_WARM_UP / 2
     for epoch in range(args.start_epoch, args.end_epoch):
         if epoch in [35, 65, 95]:
             schedule_lr(optimizer)
         print(40 * '=', save_fold, 40 * '=')
         print('Epoch [{}/{}]'.format(epoch, args.end_epoch))
-        train_model(epoch, pose_type, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arcOutput, train_dataset, train_dataloader, optimizer)
+        train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arcOutput, train_postype_dataloader, train_all_dataloader, optimizer)
         valid_model(pose_type, faceExtraction, valid_dataset, valid_dataloader)
     print(80 * '=')
 
@@ -147,11 +154,11 @@ def valid_model(pose_type, faceExtraction, valid_dataset, valid_dataloader):
         f.close()
 
 
-def train_model(epoch, pose_type, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arcOutput, train_dataset, train_dataloader, optimizer):
+def train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arcOutput, train_postype_dataloader, train_all_dataloader, optimizer):
     if epoch % 2 == 0:
-        train_dataset.analyze_df(pose_type=pose_type)
+        train_dataloader = train_postype_dataloader
     else:
-        train_dataset.analyze_df(pose_type=Pose_Type.All)
+        train_dataloader = train_all_dataloader
     faceExtraction.train()
     arcOutput.train()
     arc_losses.reset()

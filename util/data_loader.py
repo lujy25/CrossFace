@@ -84,6 +84,7 @@ def get_train_face_extraction_dataloader(root_dir, csv_name, batch_size, num_wor
         csv_name=csv_name,
         transform=transform
     )
+    dataset.analyze_df(pose_type=pose_type)
     sampler = WeightedRandomSampler(
         dataset.get_samle_weight(),
         len(dataset.get_samle_weight()),
