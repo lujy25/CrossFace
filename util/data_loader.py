@@ -180,6 +180,7 @@ class TripletDataset(Dataset):
                 sample['neg_img'] = self._transform(sample['neg_img'])
         else:
             sample = {'anc_img_path': anc_img_path, 'pos_img_path': pos_img_path, 'neg_img_path': neg_img_path,
+                      'anc_path': anc_path, 'pos_path': pos_path, 'neg_path': neg_path,
                       'pos_class': pos_class, 'neg_class': neg_class,
                       'anc_yaw': abs(anc_yaw), 'pos_yaw': abs(pos_yaw), 'neg_yaw': abs(neg_yaw)}
         return sample
