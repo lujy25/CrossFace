@@ -141,7 +141,7 @@ def valid(pose_type, valid_dataset, valid_dataloader, faceExtractionModel, save_
                                             )
         if not os.path.exists(os.path.join(analyze_fold, str(pose_type))):
             os.makedirs(os.path.join(analyze_fold, str(pose_type)))
-        print(model_name, np.mean(accuracy),  np.mean(tp_cross), np.mean(fp_cross), np.mean(fn_cross))
+        print(model_name, np.mean(accuracy),  np.mean(best_threshold))
         df = pd.DataFrame()
         df['anc_paths'] = fn_anc_paths
         df['compair_paths'] = fn_compair_paths
