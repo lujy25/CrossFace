@@ -37,7 +37,7 @@ def main(save_path):
                                                                            csv_name=args.csv_name,
                                                                            batch_size=args.batch_size,
                                                                            num_workers=args.num_workers,
-                                                                           )#num_triplet=args.num_triplets)
+                                                                           num_triplet=args.num_triplets)
     ArcFace = Backbone().to(device)
     ArcFace.load_state_dict(torch.load('./log/ArcFace-Origin/ArcFace-Origin_BACKBONE_checkpoint_epoch120.pth')['state_dict'])
     ArcFace.eval()
@@ -126,6 +126,7 @@ def valid(pose_type, valid_dataset, valid_dataloader, faceExtractionModel, save_
     with open('%s.txt' % save_path, 'a') as f:
         f.write("---Calculate Accuracy---\n")
         f.close()
+    print("Valid in", pose_type)
     for index in range(0, len(faceExtractionModel)):
         model_name = faceExtractionModel[index]['name']
         model_labels[model_name] = np.array([sublabel for label in model_labels[model_name] for sublabel in label])
@@ -140,8 +141,6 @@ def valid(pose_type, valid_dataset, valid_dataloader, faceExtractionModel, save_
                                             )
         if not os.path.exists(os.path.join(analyze_fold, str(pose_type))):
             os.makedirs(os.path.join(analyze_fold, str(pose_type)))
-        print("Valid in", pose_type)
-        print(len(fn_anc_paths), len(fp_anc_paths))
         print(model_name, np.mean(accuracy),  np.mean(tp_cross), np.mean(fp_cross), np.mean(fn_cross))
         df = pd.DataFrame()
         df['anc_paths'] = fn_anc_paths
