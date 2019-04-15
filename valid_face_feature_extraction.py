@@ -41,10 +41,27 @@ def main(save_path):
     ArcFace = Backbone().to(device)
     ArcFace.load_state_dict(torch.load('./log/ArcFace-Origin/ArcFace-Origin_BACKBONE_checkpoint_epoch120.pth')['state_dict'])
     ArcFace.eval()
+
+    CosFace = Backbone().to(device)
+    CosFace.load_state_dict(torch.load('./log/CosFace-Origin/CosFace-Origin_BACKBONE_checkpoint_epoch120.pth')['state_dict'])
+    CosFace.eval()
+
+    ArcFrontal = Backbone().to(device)
+    ArcFrontal.load_state_dict(torch.load('./log/ArcFace-Frontal-Origin/ArcFace-Frontal-Origin_BACKBONE_checkpoint_epoch120.pth')['state_dict'])
+    ArcFrontal.eval()
+
     faceExtractionModel = [
         {
             'name': 'ArcFace',
             'model': ArcFace
+        },
+        {
+            'name': 'CosFace',
+            'model': CosFace
+        },
+        {
+            'name': 'ArcFrontal',
+            'model': ArcFrontal
         }
     ]
     print(80 * '=')
