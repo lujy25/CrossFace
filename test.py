@@ -29,7 +29,7 @@ parser.add_argument('--csv-name', default='./xls_csv/test_IJB.csv', type=str,
                     help='list of training images')
 
 args = parser.parse_args()
-device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
+#device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 l2_dist = PairwiseDistance(2)
 #
 # import cv2

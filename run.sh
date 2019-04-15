@@ -1,2 +1,2 @@
 git pull
-python evaluate_dlib.py
+python test.py
