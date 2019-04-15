@@ -1,2 +1,2 @@
 git pull
-python train_face_feature_extraction.py
+python evaluate_dlib.py

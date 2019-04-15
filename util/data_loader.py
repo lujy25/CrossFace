@@ -111,7 +111,9 @@ class TripletDataset(Dataset):
     def cal_embed(self, file_path):
         img = cv2.imread(file_path)
         rec = dlib.rectangle(0, 0, img.shape[1], img.shape[0])
+        print(rec)
         shape = self._shape_predict(img, rec)
+        print(shape)
         face_descriptor = self._facerec.compute_face_descriptor(img, shape)
         return np.array([elem for elem in face_descriptor])
 
