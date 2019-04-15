@@ -28,6 +28,7 @@ class SampleDataset(Dataset):
         self._root_dir = root_dir
         self._df = pd.read_csv(csv_name)
         self._transform = transform
+        self._classes = self._df['class'].unique()
 
     def analyze_df(self, pose_type):
         if pose_type == Pose_Type.Frontal:
@@ -40,7 +41,6 @@ class SampleDataset(Dataset):
             df = self._df
         self._sample_weights = []
         self._sample_faces = []
-        self._classes = []
         for id, single_df in df.groupby(by=['class']):
             sample_weight = len(df) / len(single_df)
             sample_weights = [sample_weight] * len(single_df)
@@ -48,7 +48,6 @@ class SampleDataset(Dataset):
             for index in single_df.index:
                 face_path, face_yaw = single_df.ix[index, ['file', 'yaw']]
                 self._sample_faces.append([id, face_path, face_yaw])
-            self._classes.append(id)
 
     def get_class_num(self):
         return len(self._classes)
@@ -85,7 +84,6 @@ def get_train_face_extraction_dataloader(root_dir, csv_name, batch_size, num_wor
         csv_name=csv_name,
         transform=transform
     )
-    dataset.analyze_df(pose_type=pose_type)
     sampler = WeightedRandomSampler(
         dataset.get_samle_weight(),
         len(dataset.get_samle_weight()),
