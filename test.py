@@ -2,8 +2,8 @@
 import argparse
 import torch
 # from util.models import *
-from torch.nn.modules.distance import PairwiseDistance
-from tqdm import tqdm
+# from torch.nn.modules.distance import PairwiseDistance
+# from tqdm import tqdm
 # from util.data_loader import *
 # import os
 # import torch
