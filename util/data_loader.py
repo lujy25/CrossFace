@@ -181,6 +181,9 @@ class TripletDataset(Dataset):
             sample = {'anc_path': anc_path, 'pos_path': pos_path, 'neg_path': neg_path,
                       'pos_class': pos_class, 'neg_class': neg_class,
                       'anc_yaw': abs(anc_yaw), 'pos_yaw': abs(pos_yaw), 'neg_yaw': abs(neg_yaw)}
+            print(anc_img_path)
+            print(self.cal_embed(anc_img_path))
+            assert False
             sample['anc_embed'] = self.cal_embed(anc_img_path)
             sample['pos_embed'] = self.cal_embed(pos_img_path)
             sample['neg_embed'] = self.cal_embed(neg_img_path)
