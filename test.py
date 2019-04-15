@@ -16,21 +16,21 @@ analyze_fold = './analyze_data'
 # shape_predict = dlib.shape_predictor('model/dlib/shape_predictor_68_face_landmarks.dat')
 # facerec = dlib.face_recognition_model_v1('model/dlib/dlib_face_recognition_resnet_model_v1.dat')
 
-parser = argparse.ArgumentParser(
-    description='Face Recognition using Triplet Loss')
-parser.add_argument('--num-triplets', default=10000,
-                    type=int, metavar='NTT',
-                    help='number of triplets for evaluating (default: 10000)')
-parser.add_argument('--batch-size', default=16, type=int, metavar='BS',
-                    help='batch size (default: 128)')
-parser.add_argument('--num-workers', default=0, type=int, metavar='NW',
-                    help='number of workers (default: 8)')
-parser.add_argument('--root-dir', default='./datasets', type=str,
-                    help='path to train root dir')
-parser.add_argument('--csv-name', default='./xls_csv/test_IJB.csv', type=str,
-                    help='list of training images')
-
-args = parser.parse_args()
+# parser = argparse.ArgumentParser(
+#     description='Face Recognition using Triplet Loss')
+# parser.add_argument('--num-triplets', default=10000,
+#                     type=int, metavar='NTT',
+#                     help='number of triplets for evaluating (default: 10000)')
+# parser.add_argument('--batch-size', default=16, type=int, metavar='BS',
+#                     help='batch size (default: 128)')
+# parser.add_argument('--num-workers', default=0, type=int, metavar='NW',
+#                     help='number of workers (default: 8)')
+# parser.add_argument('--root-dir', default='./datasets', type=str,
+#                     help='path to train root dir')
+# parser.add_argument('--csv-name', default='./xls_csv/test_IJB.csv', type=str,
+#                     help='list of training images')
+#
+# args = parser.parse_args()
 #device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 l2_dist = PairwiseDistance(2)
 
