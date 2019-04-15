@@ -60,10 +60,7 @@ def valid(pose_type, valid_dataset, valid_dataloader, save_path):
         anc_path = batch_sample['anc_path']
         pos_path = batch_sample['pos_path']
         neg_path = batch_sample['neg_path']
-
-        print(anc_embed)
-        assert False
-
+        
         dists = l2_dist.forward(anc_embed, pos_embed)
         distances.append(dists.data.cpu().numpy())
         labels.append(np.ones(dists.size(0)))
