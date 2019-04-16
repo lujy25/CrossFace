@@ -150,8 +150,8 @@ def valid_model(pose_type, faceExtraction, valid_dataset, valid_dataloader):
 
 
 def train_model(pose_type, epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arcOutput, train_dataset,  train_all_dataloader,  train_posetype_dataloader, optimizer):
-    train_dataloader = train_all_dataloader
-    train_dataset.select_samples(pose_type=Pose_Type.All)
+    train_dataloader = train_posetype_dataloader
+    train_dataset.select_samples(pose_type=pose_type)
     faceExtraction.train()
     arcOutput.train()
     arc_losses.reset()

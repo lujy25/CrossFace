@@ -95,7 +95,7 @@ def main():
                                                                            csv_name=args.valid_csv_name,
                                                                            batch_size=args.valid_batch_size,
                                                                            num_workers=args.num_workers)
-   
+
     faceExtraction = Backbone().to(device)
     faceExtraction.load_state_dict(
         torch.load('./log/ArcFace-Origin/ArcFace-Origin_BACKBONE_checkpoint_epoch120.pth')['state_dict'])
