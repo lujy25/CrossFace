@@ -95,9 +95,10 @@ def main():
                                                                            csv_name=args.valid_csv_name,
                                                                            batch_size=args.valid_batch_size,
                                                                            num_workers=args.num_workers)
-
+   
     faceExtraction = Backbone().to(device)
-    faceExtraction.load_state_dict(torch.load('./model/arcface_weight/backbone_ir50_ms1m_epoch120.pth'))
+    faceExtraction.load_state_dict(
+        torch.load('./log/ArcFace-Origin/ArcFace-Origin_BACKBONE_checkpoint_epoch120.pth')['state_dict'])
     arcOutput = ArcFace(in_features=args.embedding_size, out_features=train_dataset.get_class_num(), device_id=[device_id]).to(device)
     backbone_paras_only_bn, backbone_paras_wo_bn = separate_irse_bn_paras(faceExtraction)
     _, head_paras_wo_bn = separate_irse_bn_paras(arcOutput)
