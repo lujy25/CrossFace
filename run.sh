@@ -1,2 +1,2 @@
 git pull
-python test.py
+python train_face_feature_extraction.py

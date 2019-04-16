@@ -41,6 +41,7 @@ class SampleDataset(Dataset):
         else:
             assert self._pose_type == Pose_Type.All
             self._classes = self._df['class'].unique()
+        self._classes = list(self._classes)
         self._sample_all_weights = []
         self._sample_posetype_weights = []
         self._sample_all_faces = []
