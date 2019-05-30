@@ -8,86 +8,34 @@ from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 from enum import Enum
 import random
 
-class Sample_Type(Enum):
-    Frontal2Frontal = 1
-    Profile2Profile = 2
-    Middle2Middle = 3
-    Frontal2Profile = 4
-    Frontal2Middle = 5
-    Profile2Middle = 6
-    All = 7
-
-class Pose_Type(Enum):
-    Frontal = 1
-    Profile = 2
-    Middle = 3
-    All = 4
 
 class SampleDataset(Dataset):
-    def __init__(self, root_dir, csv_name,  pose_type, transform=None):
+    def __init__(self, root_dir, csv_name, transform=None):
         self._root_dir = root_dir
         self._df = pd.read_csv(csv_name)
         self._transform = transform
-        self._pose_type = pose_type
         self._analyze_df()
 
     def _analyze_df(self):
-        if self._pose_type == Pose_Type.Frontal:
-            self._classes = self._df[self._df['pose'] == 0]['class'].unique()
-        elif self._pose_type == Pose_Type.Middle:
-            self._classes = self._df[self._df['pose'] == 1]['class'].unique()
-        elif self._pose_type == Pose_Type.Profile:
-            self._classes = self._df[self._df['pose'] == 2]['class'].unique()
-        else:
-            assert self._pose_type == Pose_Type.All
-            self._classes = self._df['class'].unique()
+        self._classes = self._df['class'].unique()
         self._classes = list(self._classes)
-        self._sample_all_weights = []
-        self._sample_posetype_weights = []
-        self._sample_all_faces = []
-        self._sample_posetype_faces = []
+        self._sample_weights = []
+        self._sample_faces = []
         for cls in self._classes:
-            select_all_df = self._df[self._df['class'] == cls]
-            if self._pose_type == Pose_Type.Frontal:
-                select_posetype_df = select_all_df[select_all_df['pose'] == 0]
-            elif self._pose_type == Pose_Type.Middle:
-                select_posetype_df = select_all_df[select_all_df['pose'] == 1]
-            elif self._pose_type == Pose_Type.Profile:
-                select_posetype_df = select_all_df[select_all_df['pose'] == 2]
-            else:
-                assert self._pose_type == Pose_Type.All
-                select_posetype_df = select_all_df
-            sample_all_weight = len(self._df) / len(select_all_df)
-            sample_all_weights = [sample_all_weight] * len(select_all_df)
-            self._sample_all_weights.extend(sample_all_weights)
+            select_df = self._df[self._df['class'] == cls]
+            sample_weight = len(self._df) / len(select_df)
+            sample_weights = [sample_weight] * len(select_df)
+            self._sample_weights.extend(sample_weights)
 
-            sample_posetype_weight = len(self._df) / len(select_posetype_df)
-            sample_posetype_weights = [sample_posetype_weight] * len(select_posetype_df)
-            self._sample_posetype_weights.extend(sample_posetype_weights)
-
-            for index in select_all_df.index:
-                face_path, face_yaw = select_all_df.ix[index, ['file', 'yaw']]
-                self._sample_all_faces.append([self._classes.index(cls), face_path, face_yaw])
-
-            for index in select_posetype_df.index:
-                face_path, face_yaw = select_posetype_df.ix[index, ['file', 'yaw']]
-                self._sample_posetype_faces.append([self._classes.index(cls), face_path, face_yaw])
+            for index in select_df.index:
+                face_path, face_yaw = select_df.ix[index, ['file', 'yaw']]
+                self._sample_faces.append([self._classes.index(cls), face_path, face_yaw])
 
     def get_class_num(self):
         return len(self._classes)
 
-    def get_samle_all_weight(self):
-        return self._sample_all_weights
-
-    def get_sample_posetype_weight(self):
-        return self._sample_posetype_weights
-
-    def select_samples(self, pose_type):
-        if pose_type == Pose_Type.All:
-            self._sample_faces = self._sample_all_faces
-        else:
-            assert pose_type == self._pose_type
-            self._sample_faces = self._sample_posetype_faces
+    def get_samle_weight(self):
+        return self._sample_weights
 
     def __getitem__(self, idx):
         face_class, face_path, face_yaw = self._sample_faces[idx]
@@ -102,7 +50,7 @@ class SampleDataset(Dataset):
         return len(self._sample_faces)
 
 
-def get_train_face_extraction_dataloader(root_dir, csv_name, batch_size, num_workers, pose_type):
+def get_train_face_extraction_dataloader(root_dir, csv_name, batch_size, num_workers):
 
     transform = transforms.Compose([
         transforms.ToPILImage(),
@@ -116,45 +64,31 @@ def get_train_face_extraction_dataloader(root_dir, csv_name, batch_size, num_wor
     dataset = SampleDataset(
         root_dir=root_dir,
         csv_name=csv_name,
-        transform=transform,
-        pose_type=pose_type
+        transform=transform
     )
-    all_sampler = WeightedRandomSampler(
-        dataset.get_samle_all_weight(),
-        len(dataset.get_samle_all_weight()),
+    sampler = WeightedRandomSampler(
+        dataset.get_samle_weight(),
+        len(dataset.get_samle_weight()),
         replacement=True
     )
-    posetype_sampler = WeightedRandomSampler(
-        dataset.get_sample_posetype_weight(),
-        len(dataset.get_sample_posetype_weight()),
-        replacement=True
-    )
-    all_dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers, sampler=all_sampler)
-    posetype_dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers, sampler=posetype_sampler)
-    return dataset, all_dataloader, posetype_dataloader
+    dataloader = DataLoader(dataset, batch_size=batch_size, num_workers=num_workers, sampler=sampler)
+    return dataset, dataloader
 
 class TripletDataset(Dataset):
     def __init__(self, root_dir, csv_name, load_img, num_triplet=None, transform=None):
         self._root_dir = root_dir
         self._df = pd.read_csv(csv_name)
+        self._analyze_df()
         self._transform = transform
         self._num_triplet = num_triplet
         self._triplets = []
         self._load_img = load_img
 
-    def _analyze_df(self, pose_type):
-        if pose_type == Pose_Type.Frontal:
-            df = self._df[self._df['pose'] == 0]
-        elif pose_type == Pose_Type.Middle:
-            df = self._df[self._df['pose'] == 1]
-        elif pose_type == Pose_Type.Profile:
-            df = self._df[self._df['pose'] == 2]
-        else:
-            df = self._df
+    def _analyze_df(self):
         self._class_path = dict()
         self._class_yaw = dict()
         self._classes = []
-        for face_class, single_df in df.groupby(by=['class']):
+        for face_class, single_df in self._df.groupby(by=['class']):
             if len(single_df) < 2:
                 continue
             self._class_path[face_class] = np.array(single_df['file'].tolist())
@@ -173,8 +107,7 @@ class TripletDataset(Dataset):
         neg_yaw = self._class_yaw[neg_class][neg_index]
         return pos_class, neg_class, anc_path, pos_path, neg_path, anc_yaw, pos_yaw, neg_yaw
 
-    def sample_triplets(self, pose_type=Pose_Type.All):
-        self._analyze_df(pose_type)
+    def sample_triplets(self):
         self._triplets = []
         for pos_class in self._classes:
             pos_class, neg_class, anc_path, pos_path, neg_path, anc_yaw, pos_yaw, neg_yaw = self._sample_triplet(pos_class)

@@ -1,0 +1,82 @@
+---Calculate Accuracy---
+Pose_Type.Frontal ArcFace 0.924924300741
+---Calculate Accuracy---
+Pose_Type.Frontal ArcFace 0.938827220077
+---Calculate Accuracy---
+Pose_Type.Profile ArcFace 0.891616161616
+---Calculate Accuracy---
+Pose_Type.Middle ArcFace 0.926262626263
+---Calculate Accuracy---
+Pose_Type.All ArcFace 0.914396333755
+---Calculate Accuracy---
+Pose_Type.Frontal ArcFace 0.923022113022
+---Calculate Accuracy---
+Pose_Type.Profile ArcFace 0.926329787234
+---Calculate Accuracy---
+Pose_Type.Middle ArcFace 0.931016749927
+---Calculate Accuracy---
+Pose_Type.All ArcFace 0.946507585335
+---Calculate Accuracy---
+Pose_Type.Frontal ArcFace 0.910442260442
+---Calculate Accuracy---
+Pose_Type.Profile ArcFace 0.924246453901
+---Calculate Accuracy---
+Pose_Type.Middle ArcFace 0.932162797532
+---Calculate Accuracy---
+Pose_Type.All ArcFace 0.917951959545
+---Calculate Accuracy---
+Pose_Type.Frontal ArcFace 0.919451269451
+Pose_Type.Frontal CosFace 0.908566748567
+Pose_Type.Frontal ArcFrontal 0.921285831286
+---Calculate Accuracy---
+Pose_Type.Profile ArcFace 0.925263336731
+Pose_Type.Profile CosFace 0.901291199456
+Pose_Type.Profile ArcFrontal 0.882849133537
+---Calculate Accuracy---
+Pose_Type.Middle ArcFace 0.936790780142
+Pose_Type.Middle CosFace 0.878191489362
+Pose_Type.Middle ArcFrontal 0.856959219858
+---Calculate Accuracy---
+Pose_Type.All ArcFace 0.89387642225
+Pose_Type.All CosFace 0.874249367889
+Pose_Type.All ArcFrontal 0.86985619469
+---Calculate Accuracy---
+Pose_Type.Frontal ArcFace 0.923972153972
+Pose_Type.Frontal CosFace 0.897674037674
+Pose_Type.Frontal ArcFrontal 0.908624078624
+---Calculate Accuracy---
+Pose_Type.Profile ArcFace 0.928117567108
+Pose_Type.Profile CosFace 0.914186204553
+Pose_Type.Profile ArcFrontal 0.898513421679
+---Calculate Accuracy---
+Pose_Type.Middle ArcFace 0.911657801418
+Pose_Type.Middle CosFace 0.890868794326
+Pose_Type.Middle ArcFrontal 0.859308510638
+---Calculate Accuracy---
+Pose_Type.All ArcFace 0.906431731985
+Pose_Type.All CosFace 0.900181731985
+Pose_Type.All ArcFrontal 0.904638116308
+---Calculate Accuracy---
+Pose_Type.Frontal ArcFace 0.924468985522
+Pose_Type.Frontal CosFace 0.902861203221
+Pose_Type.Frontal ArcFrontal 0.91432824227
+---Calculate Accuracy---
+Pose_Type.Profile ArcFace 0.930469038898
+Pose_Type.Profile CosFace 0.906328034816
+Pose_Type.Profile ArcFrontal 0.900398985823
+---Calculate Accuracy---
+Pose_Type.Middle ArcFace 0.917904250122
+Pose_Type.Middle CosFace 0.888454831957
+Pose_Type.Middle ArcFrontal 0.862522565416
+---Calculate Accuracy---
+Pose_Type.All ArcFace 0.920036610485
+Pose_Type.All CosFace 0.892576752499
+Pose_Type.All ArcFrontal 0.896459261032
+---Calculate Accuracy---
+Pose_Type.Frontal 0.797100832695
+---Calculate Accuracy---
+Pose_Type.Profile 0.659210768617
+---Calculate Accuracy---
+Pose_Type.Middle 0.681085444778
+---Calculate Accuracy---
+Pose_Type.All 0.72829333025
