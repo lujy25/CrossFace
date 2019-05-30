@@ -73,7 +73,6 @@ def schedule_lr(optimizer):
 def warm_up_lr(batch, num_batch_warm_up, init_lr, optimizer):
     for params in optimizer.param_groups:
         params['lr'] = batch * init_lr / num_batch_warm_up
-
 batch = 0
 save_fold = 'ArcFace-All'
 if not os.path.exists(os.path.join('log', save_fold)):
@@ -97,7 +96,7 @@ def main():
     backbone_paras_only_bn, backbone_paras_wo_bn = separate_irse_bn_paras(faceExtraction)
     _, head_paras_wo_bn = separate_irse_bn_paras(arcOutput)
     optimizer = torch.optim.SGD([{'params': backbone_paras_wo_bn + head_paras_wo_bn, 'weight_decay': 5e-4},
-                                 {'params': backbone_paras_only_bn}], lr=0.1, momentum=0.9)
+                                 {'params': backbone_paras_only_bn}], lr=0.002, momentum=0.9)
     NUM_EPOCH_WARM_UP = args.end_epoch // 25
     NUM_BATCH_WARM_UP = len(train_dataloader) * NUM_EPOCH_WARM_UP
     for epoch in range(args.start_epoch, args.end_epoch):
@@ -105,8 +104,8 @@ def main():
             schedule_lr(optimizer)
         print(40 * '=', save_fold, 40 * '=')
         print('Epoch [{}/{}]'.format(epoch, args.end_epoch))
-        valid_model(faceExtraction, valid_dataset, valid_dataloader)
         train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arcOutput, train_dataset,  train_dataloader, optimizer)
+        valid_model(faceExtraction, valid_dataset, valid_dataloader)
 
     print(80 * '=')
 
@@ -154,7 +153,7 @@ def train_model(epoch, NUM_EPOCH_WARM_UP, NUM_BATCH_WARM_UP, faceExtraction, arc
         global batch
         if (epoch + 1 <= NUM_EPOCH_WARM_UP) and (
                 batch + 1 <= NUM_BATCH_WARM_UP):  # adjust LR for each training batch during warm up
-            warm_up_lr(batch + 1, NUM_BATCH_WARM_UP, 0.1, optimizer)
+            warm_up_lr(batch + 1, NUM_BATCH_WARM_UP, 0.002, optimizer)
         face_img = batch_sample['face_img'].to(device)
         face_class = batch_sample['face_class'].to(device).long()
         features = faceExtraction(face_img)
